@@ -1,0 +1,28 @@
+{
+  "name": "angular-widget",
+  "version": "0.1.0",
+  "main": "angular-widget.js",
+  "ignore": [
+    ".*",
+    "Gemfile*",
+    "Gruntfile.js",
+    "pom.xml",
+    "*.json",
+    "*.conf.js",
+    "app",
+    "test",
+    "maven",
+    "*.sublime*"
+  ],
+  "dependencies": {
+    "jquery": "~2.0.3",
+    "angular": "~1.2.0"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.2.0",
+    "es5-shim": "~2.1.0"
+  },
+  "resolutions": {
+    "angular": "~1.2.0"
+  }
+}

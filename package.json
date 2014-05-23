@@ -1,0 +1,11 @@
+{
+  "name": "angular-widget",
+  "version": "0.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "wix-gruntfile": "~0.1.2"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  }
+}
