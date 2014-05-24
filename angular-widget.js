@@ -6,7 +6,7 @@ angular.module("angularWidget", []).config(function() {
 
 "use strict";
 
-angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "tagAppender", "widgets", function($http, $templateCache, $compile, $q, $timeout, tagAppender, widgets) {
+angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets) {
     return {
         restrict: "E",
         priority: 999,
@@ -31,11 +31,11 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
             function downloadWidget(module, html, filetags) {
                 try {
                     if (angular.module(module).requires.length) {
-                        return delayedPromise($http.get(html, {
+                        return $http.get(html, {
                             cache: $templateCache
                         }).then(function(response) {
                             return response.data;
-                        }));
+                        });
                     }
                 } catch (e) {}
                 var promises = filetags.map(function(filename) {
@@ -44,9 +44,9 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                 promises.unshift($http.get(html, {
                     cache: $templateCache
                 }));
-                return delayedPromise($q.all(promises).then(function(result) {
+                return $q.all(promises).then(function(result) {
                     return result[0].data;
-                }));
+                });
             }
             function handleNewInjector() {
                 var widgetConfig = injector.get("widgetConfig");
@@ -84,7 +84,7 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
             function bootstrapWidget(src) {
                 var thisChangeId = ++changeCounter;
                 var manifest = widgets.getWidgetManifest(src);
-                downloadWidget(manifest.module, manifest.html, manifest.files).then(function(response) {
+                delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files)).then(function(response) {
                     if (thisChangeId !== changeCounter) {
                         return;
                     }
@@ -98,6 +98,7 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                         handleNewInjector();
                         element.append(widgetElement);
                     } catch (e) {
+                        $log.error(e);
                         scope.$emit("widgetError");
                     }
                 }, function() {

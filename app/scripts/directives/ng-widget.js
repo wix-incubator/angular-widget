@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularWidget')
-  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, tagAppender, widgets) {
+  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets) {
     return {
       restrict: 'E',
       priority: 999,
@@ -29,9 +29,9 @@ angular.module('angularWidget')
           try {
             //testing requires instead of only module just so we can control if this happens in tests
             if (angular.module(module).requires.length) {
-              return delayedPromise($http.get(html, {cache: $templateCache}).then(function (response) {
+              return $http.get(html, {cache: $templateCache}).then(function (response) {
                 return response.data;
-              }));
+              });
             }
           } catch (e) {
 
@@ -41,9 +41,9 @@ angular.module('angularWidget')
             return tagAppender(filename, filename.split('.').reverse()[0]);
           });
           promises.unshift($http.get(html, {cache: $templateCache}));
-          return delayedPromise($q.all(promises).then(function (result) {
+          return $q.all(promises).then(function (result) {
             return result[0].data;
-          }));
+          });
         }
 
         function handleNewInjector() {
@@ -90,27 +90,29 @@ angular.module('angularWidget')
           var thisChangeId = ++changeCounter;
           var manifest = widgets.getWidgetManifest(src);
 
-          downloadWidget(manifest.module, manifest.html, manifest.files).then(function (response) {
-            if (thisChangeId !== changeCounter) {
-              return;
-            }
-            try {
-              var widgetElement = angular.element(response);
-              var requires = angular.module(manifest.module).requires;
-              if (requires.indexOf('angularWidget') === -1) {
-                requires.push('angularWidget');
+          delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files))
+            .then(function (response) {
+              if (thisChangeId !== changeCounter) {
+                return;
               }
-              injector = angular.bootstrap(widgetElement, [manifest.module]);
-              handleNewInjector();
-              element.append(widgetElement);
-            } catch (e) {
-              scope.$emit('widgetError');
-            }
-          }, function () {
-            if (thisChangeId === changeCounter) {
-              scope.$emit('widgetError');
-            }
-          });
+              try {
+                var widgetElement = angular.element(response);
+                var requires = angular.module(manifest.module).requires;
+                if (requires.indexOf('angularWidget') === -1) {
+                  requires.push('angularWidget');
+                }
+                injector = angular.bootstrap(widgetElement, [manifest.module]);
+                handleNewInjector();
+                element.append(widgetElement);
+              } catch (e) {
+                $log.error(e);
+                scope.$emit('widgetError');
+              }
+            }, function () {
+              if (thisChangeId === changeCounter) {
+                scope.$emit('widgetError');
+              }
+            });
         }
 
         function unregisterInjector() {
