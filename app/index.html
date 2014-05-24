@@ -7,26 +7,37 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <meta name="robots" content="noindex, nofollow">
+    <!-- build:css({.tmp,app}) styles/demo.css -->
+    <link rel="stylesheet" href="styles/demo.css">
+    <!-- endbuild -->  </head>
+  <body ng-init="widgets = [{id: 0, src: 'main'}]; options = {collapse: true}">
+    <a href="#" ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'main'})">add...</a>
+    <a href="#" ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</a>
+    <br/><br/><br/>
 
-    <!-- build:css({.tmp,app}) styles/main.css -->
-    <link rel="stylesheet" href="styles/main.css">
-    <!-- endbuild -->
-  </head>
-  <body>
-    <!-- Add your site or application content here -->
-    <div class="container" ng-include="'views/main.html'"></div>
+    <div ng-repeat="widget in widgets track by widget.id" style="float: left; position: relative">
+      <div ng-controller="widgetContainer">
+        <span ng-show="title" ng-bind="title"></span>
+        <a href="#" ng-click="widgets.splice($index, 1)">del</a>
+        <div ng-show="isLoading">LOADING...</div>
+        <div ng-show="isError">ERROR... <a href="#" ng-click="reload()">reload</a></div>
+        <ng-widget class="container" src="widget.src" options="options" ng-show="!isLoading && !isError"></ng-widget>
+      </div>
+    </div>
 
-    <script src="bower_components/jquery/jquery.js"></script>
     <script src="bower_components/angular/angular.js"></script>
 
-    <script src="bower_components/angular-mocks/angular-mocks.js"></script>
-    <!-- build:js(test) scripts/mocks.js -->
-    <script src="mock/server-api.js"></script>
+    <!-- build:js({.tmp,app}) scripts/demo.js -->
+    <script src="scripts/demo.js"></script>
+    <script src="scripts/controllers/widget-container.js"></script>
     <!-- endbuild -->
 
     <!-- build:js({.tmp,app}) scripts/angular-widget.js -->
     <script src="scripts/app.js"></script>
-    <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/directives/ng-widget.js"></script>
+    <script src="scripts/services/tag-appender.js"></script>
+    <script src="scripts/services/widget-config.js"></script>
+    <script src="scripts/services/widgets.js"></script>
     <!-- endbuild -->
   </body>
 </html>

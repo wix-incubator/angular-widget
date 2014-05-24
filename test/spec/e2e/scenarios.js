@@ -3,7 +3,7 @@
 describe('angularWidgetApp', function () {
 
   beforeEach(function () {
-    browser.addMockModule('angularWidgetAppMocks', function () {});
+    browser.addMockModule('angularWidgetMocks', function () {});
   });
 
   afterEach(function () {

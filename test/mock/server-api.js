@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('angularWidgetAppMocks', ['ngMockE2E'])
+angular.module('angularWidgetMocks', ['ngMockE2E'])
   .run(function ($httpBackend) {
     $httpBackend.whenGET(/.*/).passThrough();
     $httpBackend.whenPOST(/.*/).passThrough();

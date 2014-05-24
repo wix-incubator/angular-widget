@@ -1,8 +1,6 @@
 'use strict';
 
-angular.module('angularWidgetAppInternal', []);
-
-angular.module('angularWidgetApp', ['angularWidgetAppInternal'])
+angular.module('angularWidget', [])
   .config(function () {
     return;
   });
