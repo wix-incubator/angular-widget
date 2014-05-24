@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "dependencies": {},
   "devDependencies": {
+    "coveralls": "^2.10.0",
     "wix-gruntfile": "~0.1.2"
   },
   "engines": {

@@ -3,9 +3,6 @@
 angular.module('angularWidgetApp').controller('widgetContainer', function ($scope) {
   $scope.isLoading = true;
 
-  // $scope.$watch('options', function (options) {
-  //   $scope.containerOptions = angular.extend({hasContainer: true}, options);
-  // });
   $scope.$on('exportPropertiesUpdated', function (event, props) {
     $scope.title = props.title;
   });

@@ -27,7 +27,7 @@ angular.module('angularWidget')
 
         function downloadWidget(module, html, filetags) {
           try {
-            //testing requires just so we can control if this happens in tests
+            //testing requires instead of only module just so we can control if this happens in tests
             if (angular.module(module).requires.length) {
               return delayedPromise($http.get(html, {cache: $templateCache}).then(function (response) {
                 return response.data;

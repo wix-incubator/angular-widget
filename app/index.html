@@ -12,6 +12,7 @@
     <!-- endbuild -->  </head>
   <body ng-init="widgets = [{id: 0, src: 'main'}]; options = {collapse: true}">
     <a href="#" ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'main'})">add...</a>
+    <a href="#" ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'bad'})">add bad...</a>
     <a href="#" ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</a>
     <br/><br/><br/>
 

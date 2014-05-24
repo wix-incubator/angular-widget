@@ -12,3 +12,16 @@ angular.module('mainWidget', ['angularWidget'])
       'Item 5'
     ];
   });
+
+angular.module('badWidget', ['angularWidget', 'ngCookies'])
+  .controller('MainCtrl', function ($scope, $cookies, widgetConfig) {
+    widgetConfig.exportProperties({title: 'bad widget title'});
+    $scope.widgetOptions = widgetConfig.getOptions();
+    $scope.awesomeThings = [
+      'BAD 1',
+      'BAD 2',
+      'BAD 3',
+      'BAD 4',
+      'BAD 5'
+    ];
+  });
