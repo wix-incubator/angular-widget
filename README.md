@@ -76,11 +76,11 @@ You must set the manifest generator function in order for the directive to work.
 
 ### Note
 
-In some cases it might be needed to share some global state between widgets. When this global state changes you'll probably need to run a digest cycle in all widgets. `$rootScope.$digest()` will run the digest only in the injector which owns that `$rootScope` instances. To run `$rootScope.$digest()` on all `$rootScope` instances in all widgets, use `widgtes.notifyWidgtes()`.
+In some cases it might be needed to share some global state between widgets. When this global state changes you'll probably need to run a digest cycle in all widgets. `$rootScope.$digest()` will run the digest only in the injector which owns that `$rootScope` instance. To run `$rootScope.$digest()` on all `$rootScope` instances in all widgets, use `widgtes.notifyWidgtes()`.
 
 ## Service Usage (widget)
 
-In order to communicate with the hosting application, the widget uses the `widgteConfig` service.
+In order to communicate with the hosting application, the widget uses the `widgteConfig` service. (the widget module always has a module dependency on `angularWidget`, if no such dependency exists, it will be added automatically during bootstrap)
 
 ### Methods
 
@@ -92,10 +92,10 @@ In order to communicate with the hosting application, the widget uses the `widgt
 
 ## How to use in the real world
 
-This framework is best used by having a separate project for each widget and having each widget. During development, the developer sees only his own widget. All widgets should be built in a consistent manner, usually with one concatenated minified .js and .css files. 
+This framework is best used by having a separate project for each widget. During development, the developer sees only his own widget. All widgets should be built in a consistent manner, usually with one concatenated minified .js and .css files. 
 
 ## License
 
 The MIT License.
 
-See [LICENSE](https://github.com/shahata/angular-debounce/blob/master/LICENSE)
+See [LICENSE](https://github.com/shahata/angular-widget/blob/master/LICENSE)
