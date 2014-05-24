@@ -19,6 +19,10 @@ module.exports = function (grunt) {
   yeoman.local =  'http://localhost:<%= connect.options.port %>/';
   grunt.config('yeoman', yeoman);
 
+  var karma = grunt.config('karma');
+  karma.teamcity.coverageReporter = {dir : 'coverage/', type: 'lcov'};
+  grunt.config('karma', karma);
+
   var uglify = grunt.config('uglify');
   uglify.options =  {mangle: false, compress: false, beautify: true};
   grunt.config('uglify', uglify);
@@ -33,10 +37,5 @@ module.exports = function (grunt) {
   grunt.config('copy', copy);
 
   grunt.renameTask('build', 'build.old');
-  grunt.registerTask('build', [
-    'clean:dist',
-    'test',
-    'package',
-    'copy:js'
-  ]);
+  grunt.registerTask('build', ['build.old', 'copy:js']);
 };

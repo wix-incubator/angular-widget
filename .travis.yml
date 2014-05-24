@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+  - "0.10"
+
+install:
+  - npm install
+  - bundle install
+
+before_script:
+  - npm install -g grunt-cli bower
+  - bower install
+
+script:
+  - grunt build:ci
+
+after_success:
+  - cat ./coverage/*/lcov.info | ./node_modules/coveralls/bin/coveralls.js

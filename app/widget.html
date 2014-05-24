@@ -1,0 +1,38 @@
+<!doctype html>
+<html ng-app="mainWidget">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>angularWidget</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <meta name="robots" content="noindex, nofollow">
+    <!-- build:css({.tmp,app}) styles/main.css -->
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->  </head>
+  <body>
+    <ng-widget src="'main'"></ng-widget>
+
+    <script src="bower_components/angular/angular.js"></script>
+
+    <!-- build:js({.tmp,app}) scripts/controllers/main.js -->
+    <script src="scripts/controllers/main.js"></script>
+    <!-- endbuild -->
+
+    <script>
+    'use strict';
+
+    angular.module('mainWidget').config(function (widgetsProvider) {
+      widgetsProvider.setManifestGenerator(function (name) {
+        return {
+          module: name + 'Widget',
+          html: 'views/' + name + '.html',
+          files: []
+        };
+      });
+    });
+    </script>
+
+    <script src="bower_components/angular-widget/angular-widget.js"></script>
+  </body>
+</html>
