@@ -8,11 +8,11 @@ angular.module('angularWidget')
       manifestGenerator = fn;
     };
 
-    this.$get = function () {
+    this.$get = function ($injector) {
       var widgets = [];
 
       return {
-        getWidgetManifest: manifestGenerator,
+        getWidgetManifest: manifestGenerator ? $injector.invoke(manifestGenerator) : angular.noop,
         unregisterWidget: function (injector) {
           var del = [];
           if (injector) {

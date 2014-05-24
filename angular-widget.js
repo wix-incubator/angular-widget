@@ -225,10 +225,10 @@ angular.module("angularWidget").provider("widgets", function() {
     this.setManifestGenerator = function(fn) {
         manifestGenerator = fn;
     };
-    this.$get = function() {
+    this.$get = [ "$injector", function($injector) {
         var widgets = [];
         return {
-            getWidgetManifest: manifestGenerator,
+            getWidgetManifest: manifestGenerator ? $injector.invoke(manifestGenerator) : angular.noop,
             unregisterWidget: function(injector) {
                 var del = [];
                 if (injector) {
@@ -254,5 +254,5 @@ angular.module("angularWidget").provider("widgets", function() {
                 return result;
             }
         };
-    };
+    } ];
 });

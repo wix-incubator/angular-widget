@@ -9,7 +9,7 @@ describe('Unit testing widgets service', function () {
   it('should set manifest generator', function () {
     var spy = jasmine.createSpy('manifestGenerator');
     module(function (widgetsProvider) {
-      widgetsProvider.setManifestGenerator(spy);
+      widgetsProvider.setManifestGenerator(function () { return spy; });
     });
     inject(function (widgets) {
       widgets.getWidgetManifest('shahata');

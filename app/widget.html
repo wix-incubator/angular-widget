@@ -23,11 +23,13 @@
     'use strict';
 
     angular.module('mainWidget').config(function (widgetsProvider) {
-      widgetsProvider.setManifestGenerator(function (name) {
-        return {
-          module: name + 'Widget',
-          html: 'views/' + name + '.html',
-          files: []
+      widgetsProvider.setManifestGenerator(function () {
+        return function (name) {
+          return {
+            module: name + 'Widget',
+            html: 'views/' + name + '.html',
+            files: []
+          };
         };
       });
     });
