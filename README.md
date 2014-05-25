@@ -30,7 +30,7 @@ angular.module('myApp', ['angularWidget']);
 ## Directive Usage
 
 ```html
-<ng-widget src="'demo'"" options="{name: 'value'}"></ng-widget>
+<ng-widget src="'demo'" options="{name: 'value'}"></ng-widget>
 ```
 
 ### Arguments
