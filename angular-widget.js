@@ -90,11 +90,8 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                     }
                     try {
                         var widgetElement = angular.element(response);
-                        var requires = angular.module(manifest.module).requires;
-                        if (requires.indexOf("angularWidget") === -1) {
-                            requires.push("angularWidget");
-                        }
-                        injector = angular.bootstrap(widgetElement, [ manifest.module ]);
+                        var modules = [ "angularWidget", manifest.module ].concat(manifest.config || []);
+                        injector = angular.bootstrap(widgetElement, modules);
                         handleNewInjector();
                         element.append(widgetElement);
                     } catch (e) {

@@ -253,15 +253,20 @@ describe('Unit testing ngWidget directive', function () {
     downloadWidgetSuccess();
     compileWidget();
     flushDownload();
-    expect(angular.module('dummyWidget').requires).toEqual(['angularWidget']);
+    expect(element.find('div').injector().get('ngWidgetDirective')).toBeTruthy();
   });
 
-  it('should not add angularWidget twice to the module requirements', inject(function ($httpBackend, $rootScope, $compile) {
-    angular.module('dummyWidget').requires.push('angularWidget');
-    $httpBackend.expectGET('views/dummy-widget.html').respond('<div ng-bind="\'123\'"></div>');
-    element = $compile('<ng-widget src="\'dummy\'" options="options"></ng-widget>')($rootScope);
+  it('should run custom config block when bootstraping', function () {
+    var hook = widgets.getWidgetManifest;
+    widgets.getWidgetManifest = function () {
+      return angular.extend(hook.apply(widgets, arguments), {config: [function ($provide) {
+        $provide.value('shahata', 123);
+      }]});
+    };
+    downloadWidgetSuccess();
+    compileWidget();
     flushDownload();
-    expect(angular.module('dummyWidget').requires).toEqual(['angularWidget']);
-  }));
+    expect(element.find('div').injector().get('shahata')).toBe(123);
+  });
 
 });

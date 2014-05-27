@@ -60,6 +60,7 @@ angular.module('myApp').config(function (widgetsProvider) {
     return function (name) {
       return {
         module: name + 'Widget',
+        config: [], //optional array of extra modules to load into the new injector
         html: 'views/' + name + '.html',
         files: [
           'scripts/controllers/' + name + '.js',
