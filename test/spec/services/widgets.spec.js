@@ -29,12 +29,12 @@ describe('Unit testing widgets service', function () {
 
   it('should broadcast event when notifyWidgets is invoked with args', inject(function (widgets) {
     var applySpy = jasmine.createSpy('$apply').andCallFake(function (fn) { fn(); });
-    var broadcastSpy = jasmine.createSpy('$broadcastSpy');
+    var broadcastSpy = jasmine.createSpy('$broadcastSpy').andReturn('shahata');
     widgets.registerWidget({get: function (name) {
       expect(name).toBe('$rootScope');
       return {$apply: applySpy, $broadcast: broadcastSpy};
     }});
-    widgets.notifyWidgets(1, 2, 3);
+    expect(widgets.notifyWidgets(1, 2, 3)).toEqual(['shahata']);
     expect(applySpy).toHaveBeenCalled();
     expect(broadcastSpy).toHaveBeenCalledWith(1, 2, 3);
   }));

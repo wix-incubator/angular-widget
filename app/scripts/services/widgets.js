@@ -33,14 +33,16 @@ angular.module('angularWidget')
         },
         notifyWidgets: function () {
           var args = arguments;
-          widgets.forEach(function (injector) {
+          return widgets.map(function (injector) {
             var scope = injector.get('$rootScope');
             if (args.length) {
+              var event;
               scope.$apply(function () {
-                scope.$broadcast.apply(scope, args);
+                event = scope.$broadcast.apply(scope, args);
               });
+              return event;
             } else {
-              scope.$digest();
+              return scope.$digest();
             }
           });
         }
