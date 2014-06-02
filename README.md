@@ -80,6 +80,8 @@ You must set the manifest generator function in order for the directive to work.
 
 In some cases it might be needed to share some global state between widgets. When this global state changes you'll probably need to run a digest cycle in all widgets. `$rootScope.$digest()` will run the digest only in the injector which owns that `$rootScope` instance. To run `$rootScope.$digest()` on all `$rootScope` instances in all widgets, use `widgtes.notifyWidgtes()`.
 
+Also, if you want to broadcast an event on the `$rootScope` of all widgets, just call `widgets.notifyWidgets(eventName, args, ...)`.
+
 ## Service Usage (widget)
 
 In order to communicate with the hosting application, the widget uses the `widgteConfig` service. (the widget module always has a module dependency on `angularWidget`, if no such dependency exists, it will be added automatically during bootstrap)

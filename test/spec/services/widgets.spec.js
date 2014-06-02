@@ -27,8 +27,16 @@ describe('Unit testing widgets service', function () {
     expect(digestSpy).toHaveBeenCalled();
   }));
 
-  it('should support promise handling in notifyWidgets', inject(function (widgets) {
-    expect(widgets.notifyWidgets(123)).toBe(123);
+  it('should broadcast event when notifyWidgets is invoked with args', inject(function (widgets) {
+    var applySpy = jasmine.createSpy('$apply').andCallFake(function (fn) { fn(); });
+    var broadcastSpy = jasmine.createSpy('$broadcastSpy');
+    widgets.registerWidget({get: function (name) {
+      expect(name).toBe('$rootScope');
+      return {$apply: applySpy, $broadcast: broadcastSpy};
+    }});
+    widgets.notifyWidgets(1, 2, 3);
+    expect(applySpy).toHaveBeenCalled();
+    expect(broadcastSpy).toHaveBeenCalledWith(1, 2, 3);
   }));
 
   it('should handle bad unregister of widget gracefully', inject(function (widgets) {

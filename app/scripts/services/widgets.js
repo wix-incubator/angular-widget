@@ -31,11 +31,18 @@ angular.module('angularWidget')
         registerWidget: function (injector) {
           widgets.push(injector);
         },
-        notifyWidgets: function (result) {
+        notifyWidgets: function () {
+          var args = arguments;
           widgets.forEach(function (injector) {
-            injector.get('$rootScope').$digest();
+            var scope = injector.get('$rootScope');
+            if (args.length) {
+              scope.$apply(function () {
+                scope.$broadcast.apply(scope, args);
+              });
+            } else {
+              scope.$digest();
+            }
           });
-          return result;
         }
       };
     };
