@@ -244,11 +244,20 @@ angular.module("angularWidget").provider("widgets", function() {
             registerWidget: function(injector) {
                 widgets.push(injector);
             },
-            notifyWidgets: function(result) {
-                widgets.forEach(function(injector) {
-                    injector.get("$rootScope").$digest();
+            notifyWidgets: function() {
+                var args = arguments;
+                return widgets.map(function(injector) {
+                    var scope = injector.get("$rootScope");
+                    if (args.length) {
+                        var event;
+                        scope.$apply(function() {
+                            event = scope.$broadcast.apply(scope, args);
+                        });
+                        return event;
+                    } else {
+                        return scope.$digest();
+                    }
                 });
-                return result;
             }
         };
     } ];
