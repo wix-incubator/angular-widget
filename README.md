@@ -1,4 +1,4 @@
-Angular Widget [![Build Status](https://travis-ci.org/shahata/angular-widget.svg?branch=master)](https://travis-ci.org/shahata/angular-widget) [![Coverage Status](https://coveralls.io/repos/shahata/angular-widget/badge.png?branch=master)](https://coveralls.io/r/shahata/angular-widget?branch=master)
+Angular Widget [![Build Status](https://travis-ci.org/wix/angular-widget.svg?branch=master)](https://travis-ci.org/wix/angular-widget) [![Coverage Status](https://coveralls.io/repos/wix/angular-widget/badge.png?branch=master)](https://coveralls.io/r/wix/angular-widget?branch=master)
 ================
 
 [AngularJS](http://www.angularjs.org) widget framework
