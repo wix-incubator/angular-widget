@@ -11,6 +11,19 @@ angular.module('angularWidget')
     this.$get = function ($injector) {
       var widgets = [];
 
+      function notifyInjector(injector, args) {
+        var scope = injector.get('$rootScope');
+        var isMe = $injector === injector;
+        var event;
+        if (args.length) {
+          event = scope.$broadcast.apply(scope, args);
+        }
+        if (!isMe) {
+          scope.$digest();
+        }
+        return event;
+      }
+
       return {
         getWidgetManifest: manifestGenerator ? $injector.invoke(manifestGenerator) : angular.noop,
         unregisterWidget: function (injector) {
@@ -34,16 +47,7 @@ angular.module('angularWidget')
         notifyWidgets: function () {
           var args = arguments;
           return widgets.map(function (injector) {
-            var scope = injector.get('$rootScope');
-            if (args.length) {
-              var event;
-              scope.$apply(function () {
-                event = scope.$broadcast.apply(scope, args);
-              });
-              return event;
-            } else {
-              return scope.$digest();
-            }
+            return notifyInjector(injector, args);
           });
         }
       };

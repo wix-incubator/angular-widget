@@ -28,14 +28,29 @@ describe('Unit testing widgets service', function () {
   }));
 
   it('should broadcast event when notifyWidgets is invoked with args', inject(function (widgets) {
-    var applySpy = jasmine.createSpy('$apply').andCallFake(function (fn) { fn(); });
+    var digestSpy = jasmine.createSpy('$digest');
     var broadcastSpy = jasmine.createSpy('$broadcastSpy').andReturn('shahata');
     widgets.registerWidget({get: function (name) {
       expect(name).toBe('$rootScope');
-      return {$apply: applySpy, $broadcast: broadcastSpy};
+      return {$digest: digestSpy, $broadcast: broadcastSpy};
     }});
     expect(widgets.notifyWidgets(1, 2, 3)).toEqual(['shahata']);
-    expect(applySpy).toHaveBeenCalled();
+    expect(digestSpy).toHaveBeenCalled();
+    expect(broadcastSpy).toHaveBeenCalledWith(1, 2, 3);
+  }));
+
+  it('should not call digest in case the caller injector is himself', inject(function (widgets, $injector) {
+    var digestSpy = jasmine.createSpy('$digest');
+    widgets.registerWidget($injector);
+    widgets.notifyWidgets();
+    expect(digestSpy).not.toHaveBeenCalled();
+  }));
+
+  it('should call broadcast in case the caller injector is himself', inject(function (widgets, $injector) {
+    var scope = $injector.get('$rootScope');
+    var broadcastSpy = spyOn(scope, '$broadcast');
+    widgets.registerWidget($injector);
+    widgets.notifyWidgets(1, 2, 3);
     expect(broadcastSpy).toHaveBeenCalledWith(1, 2, 3);
   }));
 
