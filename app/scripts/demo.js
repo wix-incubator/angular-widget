@@ -1,6 +1,25 @@
 'use strict';
 
-angular.module('angularWidgetApp', ['angularWidget']).config(function (widgetsProvider) {
+angular.module('angularWidgetApp', ['angularWidget']).config(function (widgetsProvider, appContainerProvider) {
+  appContainerProvider.when('/app1', {
+    module: 'containedApp1',
+    html: 'views/app.html',
+    files: [
+      'scripts/controllers/app.js'
+    ]
+  });
+  appContainerProvider.when('/app2', {
+    module: 'containedApp2',
+    html: 'views/app.html',
+    files: [
+      'scripts/controllers/app.js'
+    ]
+  });
+  appContainerProvider.otherwise({
+    redirectTo: '/app1',
+  });
+
+
   widgetsProvider.setManifestGenerator(function () {
     return function (name) {
       var fileName = (name === 'bad' ? 'main' : name);

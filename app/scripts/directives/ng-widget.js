@@ -1,14 +1,15 @@
 'use strict';
 
 angular.module('angularWidget')
-  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets) {
+  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
     return {
       restrict: 'E',
       priority: 999,
       terminal: true,
       scope: {
         src: '=',
-        options: '='
+        options: '=',
+        delay: '@'
       },
       link: function (scope, element) {
         var changeCounter = 0, injector;
@@ -17,11 +18,11 @@ angular.module('angularWidget')
           return $q.when(promise).then(function (result) {
             return $timeout(function () {
               return result;
-            }, delay || 1000);
+            }, delay === undefined ? 1000 : delay);
           }, function (result) {
             return $timeout(function () {
               return $q.reject(result);
-            }, delay || 1000);
+            }, delay === undefined ? 1000 : delay);
           });
         }
 
@@ -48,6 +49,22 @@ angular.module('angularWidget')
 
         function handleNewInjector() {
           var widgetConfig = injector.get('widgetConfig');
+          var widgetScope = injector.get('$rootScope');
+
+          try {
+            var eventsToForward = ['$locationChangeSuccess'];
+            injector.get('$route').reload();
+
+            eventsToForward.forEach(function (name) {
+              $rootScope.$on(name, function () {
+                var args = Array.prototype.slice.call(arguments);
+                args[0] = name;
+                widgetScope.$broadcast.apply(widgetScope, args);
+              });
+            });
+          } catch (e) {
+
+          }
 
           var properties = widgetConfig.exportProperties();
           scope.$emit('exportPropertiesUpdated', properties);
@@ -67,7 +84,7 @@ angular.module('angularWidget')
           };
 
           scope.$watch('options', function (options) {
-            injector.get('$rootScope').$apply(function () {
+            widgetScope.$apply(function () {
               widgetConfig.setOptions(options);
             });
           }, true);
@@ -86,11 +103,11 @@ angular.module('angularWidget')
           widgets.registerWidget(injector);
         }
 
-        function bootstrapWidget(src) {
+        function bootstrapWidget(src, delay) {
           var thisChangeId = ++changeCounter;
-          var manifest = widgets.getWidgetManifest(src);
+          var manifest = src.match(/^\$app\$/) ? appContainer.getCurrentRoute() : widgets.getWidgetManifest(src);
 
-          delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files))
+          delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay)
             .then(function (response) {
               if (thisChangeId !== changeCounter) {
                 return;
@@ -123,7 +140,7 @@ angular.module('angularWidget')
           unregisterInjector();
           element.html('');
           if (scope.src) {
-            bootstrapWidget(scope.src);
+            bootstrapWidget(scope.src, scope.delay);
           }
         }
 

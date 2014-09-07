@@ -11,22 +11,30 @@
     <link rel="stylesheet" href="styles/demo.css">
     <!-- endbuild -->  </head>
   <body ng-init="widgets = [{id: 0, src: 'main'}]; options = {collapse: true}">
-    <a href="#" ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'main'})">add...</a>
-    <a href="#" ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'bad'})">add bad...</a>
-    <a href="#" ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</a>
+    <button ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'main'})">add...</button>
+    <button ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'bad'})">add bad...</button>
+    <button ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</button>
     <br/><br/><br/>
 
-    <div ng-repeat="widget in widgets track by widget.id" style="float: left; position: relative">
+    <div ng-repeat="widget in widgets track by widget.id" style="float: left; position: relative; padding-right: 10px">
       <div ng-controller="widgetContainer">
         <span ng-show="title" ng-bind="title"></span>
-        <a href="#" ng-click="widgets.splice($index, 1)">del</a>
+        <button ng-click="widgets.splice($index, 1)">del</button>
         <div ng-show="isLoading">LOADING...</div>
-        <div ng-show="isError">ERROR... <a href="#" ng-click="reload()">reload</a></div>
+        <div ng-show="isError">ERROR... <button ng-click="reload()">reload</button></div>
         <ng-widget class="container" src="widget.src" options="options" ng-show="!isLoading && !isError"></ng-widget>
       </div>
     </div>
 
+    <div style="clear: both;">
+      <br/><hr/>Please ignore experiment below<hr/><br/>
+      <a href="#/app1">app1</a>&nbsp;&nbsp;&nbsp;<a href="#/app2">app2</a>
+      <br/><br/><br/>
+      <ng-app-container style="position: relative"></ng-app-container>
+    </div>
+
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
 
     <!-- build:js({.tmp,app}) scripts/demo.js -->
     <script src="scripts/demo.js"></script>
@@ -36,9 +44,11 @@
     <!-- build:js({.tmp,app}) scripts/angular-widget.js -->
     <script src="scripts/app.js"></script>
     <script src="scripts/directives/ng-widget.js"></script>
+    <script src="scripts/directives/ng-app-container.js"></script>
     <script src="scripts/services/tag-appender.js"></script>
     <script src="scripts/services/widget-config.js"></script>
     <script src="scripts/services/widgets.js"></script>
+    <script src="scripts/services/app-container.js"></script>
     <!-- endbuild -->
   </body>
 </html>
