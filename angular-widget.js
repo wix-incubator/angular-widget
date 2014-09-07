@@ -1,19 +1,32 @@
 "use strict";
 
-angular.module("angularWidget", []).config(function() {
-    return;
-});
+angular.module("angularWidget", []).run([ "$injector", function($injector) {
+    if (!window.angularWidget) {
+        var stuffToOverride = [ "$location" ];
+        window.angularWidget = stuffToOverride.reduce(function(obj, injectable) {
+            obj[injectable] = $injector.get(injectable);
+            return obj;
+        }, {});
+    }
+} ]).config([ "$provide", function($provide) {
+    if (window.angularWidget) {
+        angular.forEach(window.angularWidget, function(value, key) {
+            $provide.constant(key, value);
+        });
+    }
+} ]);
 
 "use strict";
 
-angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets) {
+angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
     return {
         restrict: "E",
         priority: 999,
         terminal: true,
         scope: {
             src: "=",
-            options: "="
+            options: "=",
+            delay: "@"
         },
         link: function(scope, element) {
             var changeCounter = 0, injector;
@@ -21,11 +34,11 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                 return $q.when(promise).then(function(result) {
                     return $timeout(function() {
                         return result;
-                    }, delay || 1e3);
+                    }, delay === undefined ? 1e3 : delay);
                 }, function(result) {
                     return $timeout(function() {
                         return $q.reject(result);
-                    }, delay || 1e3);
+                    }, delay === undefined ? 1e3 : delay);
                 });
             }
             function downloadWidget(module, html, filetags) {
@@ -50,6 +63,18 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
             }
             function handleNewInjector() {
                 var widgetConfig = injector.get("widgetConfig");
+                var widgetScope = injector.get("$rootScope");
+                try {
+                    var eventsToForward = [ "$locationChangeSuccess" ];
+                    injector.get("$route").reload();
+                    eventsToForward.forEach(function(name) {
+                        $rootScope.$on(name, function() {
+                            var args = Array.prototype.slice.call(arguments);
+                            args[0] = name;
+                            widgetScope.$broadcast.apply(widgetScope, args);
+                        });
+                    });
+                } catch (e) {}
                 var properties = widgetConfig.exportProperties();
                 scope.$emit("exportPropertiesUpdated", properties);
                 widgetConfig.exportProperties = function(props) {
@@ -65,7 +90,7 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                     });
                 };
                 scope.$watch("options", function(options) {
-                    injector.get("$rootScope").$apply(function() {
+                    widgetScope.$apply(function() {
                         widgetConfig.setOptions(options);
                     });
                 }, true);
@@ -81,10 +106,10 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                 }
                 widgets.registerWidget(injector);
             }
-            function bootstrapWidget(src) {
+            function bootstrapWidget(src, delay) {
                 var thisChangeId = ++changeCounter;
-                var manifest = widgets.getWidgetManifest(src);
-                delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files)).then(function(response) {
+                var manifest = src.match(/^\$app\$/) ? appContainer.getCurrentRoute() : widgets.getWidgetManifest(src);
+                delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay).then(function(response) {
                     if (thisChangeId !== changeCounter) {
                         return;
                     }
@@ -114,7 +139,7 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                 unregisterInjector();
                 element.html("");
                 if (scope.src) {
-                    bootstrapWidget(scope.src);
+                    bootstrapWidget(scope.src, scope.delay);
                 }
             }
             scope.$watch("src", updateWidgetSrc);
@@ -122,6 +147,22 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
             scope.$on("$destroy", function() {
                 changeCounter++;
                 unregisterInjector();
+            });
+        }
+    };
+} ]);
+
+"use strict";
+
+angular.module("angularWidget").directive("ngAppContainer", [ "appContainer", "$rootScope", function(appContainer, $rootScope) {
+    return {
+        restrict: "E",
+        priority: 999,
+        scope: {},
+        template: '<ng-widget src="src" delay="0"></ng-widget>',
+        link: function(scope) {
+            $rootScope.$on("$locationChangeSuccess", function() {
+                scope.src = "$app$" + appContainer.getCurrentRoute().route;
             });
         }
     };
@@ -261,6 +302,34 @@ angular.module("angularWidget").provider("widgets", function() {
                 return widgets.map(function(injector) {
                     return notifyInjector(injector, args);
                 });
+            }
+        };
+    } ];
+});
+
+"use strict";
+
+angular.module("angularWidget").provider("appContainer", function() {
+    var defaultRoute = {}, routes = {};
+    this.when = function(route, definition) {
+        routes[route] = definition;
+        return this;
+    };
+    this.otherwise = function(definition) {
+        defaultRoute = definition;
+        return this;
+    };
+    this.$get = [ "$location", function($location) {
+        return {
+            getCurrentRoute: function() {
+                var prefix = ($location.path().match(/\/[^\/]*/) || [])[0];
+                var route = angular.extend({
+                    route: prefix
+                }, routes[prefix] || defaultRoute);
+                if (route.redirectTo) {
+                    $location.path(route.redirectTo);
+                }
+                return route;
             }
         };
     } ];
