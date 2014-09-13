@@ -2,10 +2,10 @@
 
 angular.module('angularWidget')
   .provider('widgets', function () {
-    var manifestGenerator;
+    var manifestGenerators = [];
 
     this.setManifestGenerator = function (fn) {
-      manifestGenerator = fn;
+      manifestGenerators.push(fn);
     };
 
     this.$get = function ($injector) {
@@ -24,8 +24,18 @@ angular.module('angularWidget')
         return event;
       }
 
+      manifestGenerators = manifestGenerators.map(function (generator) {
+        return $injector.invoke(generator);
+      });
+
       return {
-        getWidgetManifest: manifestGenerator ? $injector.invoke(manifestGenerator) : angular.noop,
+        getWidgetManifest: function () {
+          var args = arguments;
+          return manifestGenerators.reduce(function (prev, generator) {
+            var result = generator.apply(this, args) || {};
+            return prev.priority > result.priority ? prev : result;
+          }, {});
+        },
         unregisterWidget: function (injector) {
           var del = [];
           if (injector) {

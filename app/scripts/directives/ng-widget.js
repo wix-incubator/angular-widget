@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularWidget')
-  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
+  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope, $location) {
     return {
       restrict: 'E',
       priority: 999,
@@ -51,19 +51,21 @@ angular.module('angularWidget')
           var widgetConfig = injector.get('widgetConfig');
           var widgetScope = injector.get('$rootScope');
 
-          try {
-            var eventsToForward = ['$locationChangeSuccess'];
-            injector.get('$route').reload();
-
-            eventsToForward.forEach(function (name) {
-              $rootScope.$on(name, function () {
-                var args = Array.prototype.slice.call(arguments);
-                args[0] = name;
-                widgetScope.$broadcast.apply(widgetScope, args);
-              });
+          var eventsToForward = ['$locationChangeSuccess'];
+          eventsToForward.forEach(function (name) {
+            $rootScope.$on(name, function () {
+              var args = Array.prototype.slice.call(arguments);
+              args[0] = name;
+              //widgetScope.$broadcast.apply(widgetScope, args);
             });
-          } catch (e) {
+          });
 
+          try {
+            injector.get('$route').reload();
+          } catch (e) {
+            if ($location.absUrl().indexOf('app1') === -1) {
+              //widgetScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
+            }
           }
 
           var properties = widgetConfig.exportProperties();
