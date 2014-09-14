@@ -38,7 +38,7 @@ angular.module('angularWidget')
             } else {
               return result || prev;
             }
-          });
+          }, undefined);
         },
         unregisterWidget: function (injector) {
           var del = [];
