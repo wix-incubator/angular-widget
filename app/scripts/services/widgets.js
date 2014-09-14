@@ -32,9 +32,13 @@ angular.module('angularWidget')
         getWidgetManifest: function () {
           var args = arguments;
           return manifestGenerators.reduce(function (prev, generator) {
-            var result = generator.apply(this, args) || {};
-            return prev.priority > result.priority ? prev : result;
-          }, {});
+            var result = generator.apply(this, args);
+            if (result && prev) {
+              return prev.priority > result.priority ? prev : result;
+            } else {
+              return result || prev;
+            }
+          });
         },
         unregisterWidget: function (injector) {
           var del = [];
