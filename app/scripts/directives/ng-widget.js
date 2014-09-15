@@ -1,7 +1,8 @@
 'use strict';
 
 angular.module('angularWidget')
-  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope, $location) {
+  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets,
+             appContainer, $rootScope) {
     return {
       restrict: 'E',
       priority: 999,
@@ -63,9 +64,7 @@ angular.module('angularWidget')
           try {
             injector.get('$route').reload();
           } catch (e) {
-            if ($location.absUrl().indexOf('app1') === -1) {
-              //widgetScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
-            }
+            //widgetScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
           }
 
           var properties = widgetConfig.exportProperties();

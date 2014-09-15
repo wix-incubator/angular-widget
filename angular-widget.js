@@ -1,7 +1,21 @@
 "use strict";
 
-angular.module("angularWidget", []).run([ "$injector", function($injector) {
+angular.module("angularWidget", []).run([ "$injector", "$rootScope", function($injector, $rootScope) {
+    function decorate(service, method, count) {
+        var original = service[method];
+        service[method] = function() {
+            if (arguments.length >= count && !$rootScope.$$phase) {
+                $rootScope.$evalAsync();
+            }
+            return original.apply(service, arguments);
+        };
+    }
     if (!window.angularWidget) {
+        var $location = $injector.get("$location");
+        decorate($location, "url", 1);
+        decorate($location, "path", 1);
+        decorate($location, "search", 2);
+        decorate($location, "hash", 1);
         var stuffToOverride = [ "$location" ];
         window.angularWidget = stuffToOverride.reduce(function(obj, injectable) {
             obj[injectable] = $injector.get(injectable);
@@ -18,7 +32,7 @@ angular.module("angularWidget", []).run([ "$injector", function($injector) {
 
 "use strict";
 
-angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", "$location", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope, $location) {
+angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
     return {
         restrict: "E",
         priority: 999,
@@ -73,9 +87,7 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
                 });
                 try {
                     injector.get("$route").reload();
-                } catch (e) {
-                    if ($location.absUrl().indexOf("app1") === -1) {}
-                }
+                } catch (e) {}
                 var properties = widgetConfig.exportProperties();
                 scope.$emit("exportPropertiesUpdated", properties);
                 widgetConfig.exportProperties = function(props) {
