@@ -3,9 +3,14 @@
 angular.module('angularWidget')
   .provider('widgets', function () {
     var manifestGenerators = [];
+    var eventsToForward = [];
 
     this.setManifestGenerator = function (fn) {
       manifestGenerators.push(fn);
+    };
+
+    this.addEventToForward = function (name) {
+      eventsToForward = eventsToForward.concat(name);
     };
 
     this.$get = function ($injector) {
@@ -63,6 +68,9 @@ angular.module('angularWidget')
           return widgets.map(function (injector) {
             return notifyInjector(injector, args);
           });
+        },
+        getEventsToForward: function () {
+          return eventsToForward;
         }
       };
     };

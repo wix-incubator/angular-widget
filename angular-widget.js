@@ -78,11 +78,11 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
             function handleNewInjector() {
                 var widgetConfig = injector.get("widgetConfig");
                 var widgetScope = injector.get("$rootScope");
-                var eventsToForward = [ "$locationChangeSuccess" ];
-                eventsToForward.forEach(function(name) {
+                widgets.getEventsToForward().forEach(function(name) {
                     $rootScope.$on(name, function() {
                         var args = Array.prototype.slice.call(arguments);
                         args[0] = name;
+                        widgetScope.$broadcast.apply(widgetScope, args);
                     });
                 });
                 try {
@@ -273,8 +273,12 @@ angular.module("angularWidget").factory("widgetConfig", [ "$log", function($log)
 
 angular.module("angularWidget").provider("widgets", function() {
     var manifestGenerators = [];
+    var eventsToForward = [];
     this.setManifestGenerator = function(fn) {
         manifestGenerators.push(fn);
+    };
+    this.addEventToForward = function(name) {
+        eventsToForward = eventsToForward.concat(name);
     };
     this.$get = [ "$injector", function($injector) {
         var widgets = [];
@@ -328,6 +332,9 @@ angular.module("angularWidget").provider("widgets", function() {
                 return widgets.map(function(injector) {
                     return notifyInjector(injector, args);
                 });
+            },
+            getEventsToForward: function() {
+                return eventsToForward;
             }
         };
     } ];

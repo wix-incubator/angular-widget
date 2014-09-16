@@ -52,12 +52,11 @@ angular.module('angularWidget')
           var widgetConfig = injector.get('widgetConfig');
           var widgetScope = injector.get('$rootScope');
 
-          var eventsToForward = ['$locationChangeSuccess'];
-          eventsToForward.forEach(function (name) {
+          widgets.getEventsToForward().forEach(function (name) {
             $rootScope.$on(name, function () {
               var args = Array.prototype.slice.call(arguments);
               args[0] = name;
-              //widgetScope.$broadcast.apply(widgetScope, args);
+              widgetScope.$broadcast.apply(widgetScope, args);
             });
           });
 

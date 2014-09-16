@@ -15,6 +15,7 @@ describe('Unit testing ngWidget directive', function () {
     module({
       tagAppender: tagAppender = jasmine.createSpy('tagAppender'),
       widgets: widgets = {
+        getEventsToForward: jasmine.createSpy('getEventsToForward').andReturn([]),
         registerWidget: jasmine.createSpy('registerWidget'),
         unregisterWidget: jasmine.createSpy('unregisterWidget'),
         getWidgetManifest: function (name) {
