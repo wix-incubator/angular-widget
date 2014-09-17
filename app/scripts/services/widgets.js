@@ -18,12 +18,11 @@ angular.module('angularWidget')
 
       function notifyInjector(injector, args) {
         var scope = injector.get('$rootScope');
-        var isMe = $injector === injector;
         var event;
         if (args.length) {
           event = scope.$broadcast.apply(scope, args);
         }
-        if (!isMe) {
+        if (!scope.$$phase) {
           scope.$digest();
         }
         return event;
