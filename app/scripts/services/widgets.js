@@ -22,7 +22,7 @@ angular.module('angularWidget')
         if (args.length) {
           event = scope.$broadcast.apply(scope, args);
         }
-        if (!scope.$$phase) {
+        if (!scope.$$phase && injector !== $injector) {
           scope.$digest();
         }
         return event;

@@ -288,7 +288,7 @@ angular.module("angularWidget").provider("widgets", function() {
             if (args.length) {
                 event = scope.$broadcast.apply(scope, args);
             }
-            if (!scope.$$phase) {
+            if (!scope.$$phase && injector !== $injector) {
                 scope.$digest();
             }
             return event;
