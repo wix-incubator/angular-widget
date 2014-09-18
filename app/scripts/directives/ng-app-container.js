@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('angularWidget')
+angular.module('angularWidgetInternal')
   .directive('ngAppContainer', function (appContainer, $rootScope) {
     return {
       restrict: 'E',

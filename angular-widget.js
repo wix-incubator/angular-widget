@@ -1,6 +1,15 @@
 "use strict";
 
-angular.module("angularWidget", []).run([ "$injector", "$rootScope", function($injector, $rootScope) {
+angular.module("angularWidgetInternal", []);
+
+angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsProvider", function(widgetsProvider) {
+    widgetsProvider.addServiceToShare("$location", {
+        url: 1,
+        path: 1,
+        search: 2,
+        hash: 1
+    });
+} ]).run([ "$injector", "$rootScope", "widgets", function($injector, $rootScope, widgets) {
     function decorate(service, method, count) {
         var original = service[method];
         service[method] = function() {
@@ -11,16 +20,14 @@ angular.module("angularWidget", []).run([ "$injector", "$rootScope", function($i
         };
     }
     if (!window.angularWidget) {
-        var $location = $injector.get("$location");
-        decorate($location, "url", 1);
-        decorate($location, "path", 1);
-        decorate($location, "search", 2);
-        decorate($location, "hash", 1);
-        var stuffToOverride = [ "$location" ];
-        window.angularWidget = stuffToOverride.reduce(function(obj, injectable) {
-            obj[injectable] = $injector.get(injectable);
-            return obj;
-        }, {});
+        window.angularWidget = {};
+        angular.forEach(widgets.getServicesToShare(), function(description, name) {
+            var service = $injector.get(name);
+            angular.forEach(description, function(count, method) {
+                decorate(service, method, count);
+            });
+            window.angularWidget[name] = service;
+        });
     }
 } ]).config([ "$provide", function($provide) {
     if (window.angularWidget) {
@@ -32,7 +39,7 @@ angular.module("angularWidget", []).run([ "$injector", "$rootScope", function($i
 
 "use strict";
 
-angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
+angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
     return {
         restrict: "E",
         priority: 999,
@@ -167,7 +174,7 @@ angular.module("angularWidget").directive("ngWidget", [ "$http", "$templateCache
 
 "use strict";
 
-angular.module("angularWidget").directive("ngAppContainer", [ "appContainer", "$rootScope", function(appContainer, $rootScope) {
+angular.module("angularWidgetInternal").directive("ngAppContainer", [ "appContainer", "$rootScope", function(appContainer, $rootScope) {
     return {
         restrict: "E",
         priority: 999,
@@ -183,7 +190,7 @@ angular.module("angularWidget").directive("ngAppContainer", [ "appContainer", "$
 
 "use strict";
 
-angular.module("angularWidget").value("headElement", document.getElementsByTagName("head")[0]).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", function($q, $rootScope, headElement, $interval, navigator, $document) {
+angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", function($q, $rootScope, headElement, $interval, navigator, $document) {
     var requireCache = [];
     var styleSheets = $document[0].styleSheets;
     return function(url, filetype) {
@@ -250,7 +257,7 @@ angular.module("angularWidget").value("headElement", document.getElementsByTagNa
 
 "use strict";
 
-angular.module("angularWidget").factory("widgetConfig", [ "$log", function($log) {
+angular.module("angularWidgetInternal").factory("widgetConfig", [ "$log", function($log) {
     var options = {};
     var props = {};
     return {
@@ -271,14 +278,18 @@ angular.module("angularWidget").factory("widgetConfig", [ "$log", function($log)
 
 "use strict";
 
-angular.module("angularWidget").provider("widgets", function() {
+angular.module("angularWidgetInternal").provider("widgets", function() {
     var manifestGenerators = [];
     var eventsToForward = [];
+    var servicesToShare = {};
     this.setManifestGenerator = function(fn) {
         manifestGenerators.push(fn);
     };
     this.addEventToForward = function(name) {
         eventsToForward = eventsToForward.concat(name);
+    };
+    this.addServiceToShare = function(name, description) {
+        servicesToShare[name] = description;
     };
     this.$get = [ "$injector", function($injector) {
         var widgets = [];
@@ -334,6 +345,9 @@ angular.module("angularWidget").provider("widgets", function() {
             },
             getEventsToForward: function() {
                 return eventsToForward;
+            },
+            getServicesToShare: function() {
+                return servicesToShare;
             }
         };
     } ];
@@ -341,7 +355,7 @@ angular.module("angularWidget").provider("widgets", function() {
 
 "use strict";
 
-angular.module("angularWidget").provider("appContainer", function() {
+angular.module("angularWidgetInternal").provider("appContainer", function() {
     var defaultRoute = {}, routes = {};
     this.when = function(route, definition) {
         routes[route] = definition;

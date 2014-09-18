@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('angularWidget')
+angular.module('angularWidgetInternal')
   .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets,
              appContainer, $rootScope) {
     return {

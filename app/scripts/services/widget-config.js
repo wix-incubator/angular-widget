@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('angularWidget')
+angular.module('angularWidgetInternal')
   .factory('widgetConfig', function ($log) {
     var options = {};
     var props = {};

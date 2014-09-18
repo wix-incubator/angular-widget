@@ -1,9 +1,10 @@
 'use strict';
 
-angular.module('angularWidget')
+angular.module('angularWidgetInternal')
   .provider('widgets', function () {
     var manifestGenerators = [];
     var eventsToForward = [];
+    var servicesToShare = {};
 
     this.setManifestGenerator = function (fn) {
       manifestGenerators.push(fn);
@@ -11,6 +12,10 @@ angular.module('angularWidget')
 
     this.addEventToForward = function (name) {
       eventsToForward = eventsToForward.concat(name);
+    };
+
+    this.addServiceToShare = function (name, description) {
+      servicesToShare[name] = description;
     };
 
     this.$get = function ($injector) {
@@ -70,6 +75,9 @@ angular.module('angularWidget')
         },
         getEventsToForward: function () {
           return eventsToForward;
+        },
+        getServicesToShare: function () {
+          return servicesToShare;
         }
       };
     };

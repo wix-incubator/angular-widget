@@ -1,8 +1,16 @@
 /* global window */
 'use strict';
-
-angular.module('angularWidget', [])
-  .run(function ($injector, $rootScope) {
+angular.module('angularWidgetInternal', []);
+angular.module('angularWidget', ['angularWidgetInternal'])
+  .config(function (widgetsProvider) {
+    widgetsProvider.addServiceToShare('$location', {
+      url: 1,
+      path: 1,
+      search: 2,
+      hash: 1
+    });
+  })
+  .run(function ($injector, $rootScope, widgets) {
     function decorate(service, method, count) {
       var original = service[method];
       service[method] = function () {
@@ -14,17 +22,14 @@ angular.module('angularWidget', [])
     }
 
     if (!window.angularWidget) {
-      var $location = $injector.get('$location');
-      decorate($location, 'url', 1);
-      decorate($location, 'path', 1);
-      decorate($location, 'search', 2);
-      decorate($location, 'hash', 1);
-
-      var stuffToOverride = ['$location'];
-      window.angularWidget = stuffToOverride.reduce(function (obj, injectable) {
-        obj[injectable] = $injector.get(injectable);
-        return obj;
-      }, {});
+      window.angularWidget = {};
+      angular.forEach(widgets.getServicesToShare(), function (description, name) {
+        var service = $injector.get(name);
+        angular.forEach(description, function (count, method) {
+          decorate(service, method, count);
+        });
+        window.angularWidget[name] = service;
+      });
     }
   })
   .config(function ($provide) {

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('angularWidget')
+angular.module('angularWidgetInternal')
   .provider('appContainer', function () {
     var defaultRoute = {}, routes = {};
 

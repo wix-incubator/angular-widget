@@ -1,7 +1,7 @@
 /* global navigator, document */
 'use strict';
 
-angular.module('angularWidget')
+angular.module('angularWidgetInternal')
   .value('headElement', document.getElementsByTagName('head')[0])
   .value('navigator', navigator)
   .factory('tagAppender', function ($q, $rootScope, headElement, $interval, navigator, $document) {
