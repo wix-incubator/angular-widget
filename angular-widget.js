@@ -95,7 +95,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                 try {
                     injector.get("$route").reload();
                 } catch (e) {
-                    widgetScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
+                    widgetScope.$broadcast("$locationChangeSuccess", $location.absUrl().replace(/\/$/, ""), "");
                 }
                 var properties = widgetConfig.exportProperties();
                 scope.$emit("exportPropertiesUpdated", properties);
