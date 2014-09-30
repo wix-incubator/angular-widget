@@ -63,7 +63,7 @@ angular.module('angularWidgetInternal')
           try {
             injector.get('$route').reload();
           } catch (e) {
-            widgetScope.$broadcast('$locationChangeSuccess', $location.absUrl().replace(/\/$/, ''), '');
+            widgetScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
           }
 
           var properties = widgetConfig.exportProperties();
