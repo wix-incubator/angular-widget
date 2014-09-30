@@ -39,7 +39,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
 
 "use strict";
 
-angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope) {
+angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", "$location", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope, $location) {
     return {
         restrict: "E",
         priority: 999,
@@ -94,7 +94,9 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                 });
                 try {
                     injector.get("$route").reload();
-                } catch (e) {}
+                } catch (e) {
+                    widgetScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
+                }
                 var properties = widgetConfig.exportProperties();
                 scope.$emit("exportPropertiesUpdated", properties);
                 widgetConfig.exportProperties = function(props) {
