@@ -138,6 +138,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                     try {
                         var widgetElement = angular.element(response);
                         var modules = [ "angularWidget", manifest.module ].concat(manifest.config || []);
+                        scope.$emit("widgetLoading");
                         injector = angular.bootstrap(widgetElement, modules);
                         handleNewInjector();
                         element.append(widgetElement);
