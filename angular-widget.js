@@ -7,8 +7,10 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
         url: 1,
         path: 1,
         search: 2,
-        hash: 1
+        hash: 1,
+        $$parse: 1
     });
+    widgetsProvider.addEventToForward("$locationChangeStart");
 } ]).run([ "$injector", "$rootScope", "widgets", "$location", function($injector, $rootScope, widgets, $location) {
     function decorate(service, method, count) {
         var original = service[method];
@@ -30,11 +32,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
         });
     } else {
         $rootScope.$evalAsync(function() {
-            if ($injector.has("$route")) {
-                $injector.get("$route").reload();
-            } else {
-                $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
-            }
+            $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
         });
     }
 } ]).config([ "$provide", function($provide) {
@@ -94,10 +92,12 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                 var widgetConfig = injector.get("widgetConfig");
                 var widgetScope = injector.get("$rootScope");
                 widgets.getEventsToForward().forEach(function(name) {
-                    $rootScope.$on(name, function() {
+                    $rootScope.$on(name, function(event) {
                         var args = Array.prototype.slice.call(arguments);
                         args[0] = name;
-                        widgetScope.$broadcast.apply(widgetScope, args);
+                        if (widgetScope.$broadcast.apply(widgetScope, args).defaultPrevented) {
+                            event.preventDefault();
+                        }
                     });
                 });
                 var properties = widgetConfig.exportProperties();

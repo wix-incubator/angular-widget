@@ -52,10 +52,12 @@ angular.module('angularWidgetInternal')
           var widgetScope = injector.get('$rootScope');
 
           widgets.getEventsToForward().forEach(function (name) {
-            $rootScope.$on(name, function () {
+            $rootScope.$on(name, function (event) {
               var args = Array.prototype.slice.call(arguments);
               args[0] = name;
-              widgetScope.$broadcast.apply(widgetScope, args);
+              if (widgetScope.$broadcast.apply(widgetScope, args).defaultPrevented) {
+                event.preventDefault();
+              }
             });
           });
 
