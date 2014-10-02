@@ -9,7 +9,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
         search: 2,
         hash: 1
     });
-} ]).run([ "$injector", "$rootScope", "widgets", function($injector, $rootScope, widgets) {
+} ]).run([ "$injector", "$rootScope", "widgets", "$location", function($injector, $rootScope, widgets, $location) {
     function decorate(service, method, count) {
         var original = service[method];
         service[method] = function() {
@@ -28,6 +28,14 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
             });
             window.angularWidget[name] = service;
         });
+    } else {
+        $rootScope.$evalAsync(function() {
+            if ($injector.has("$route")) {
+                $injector.get("$route").reload();
+            } else {
+                $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
+            }
+        });
     }
 } ]).config([ "$provide", function($provide) {
     if (window.angularWidget) {
@@ -39,7 +47,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
 
 "use strict";
 
-angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$compile", "$q", "$timeout", "$log", "tagAppender", "widgets", "appContainer", "$rootScope", "$location", function($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets, appContainer, $rootScope, $location) {
+angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "$log", "tagAppender", "widgets", "$rootScope", function($http, $templateCache, $q, $timeout, $log, tagAppender, widgets, $rootScope) {
     return {
         restrict: "E",
         priority: 999,
@@ -92,11 +100,6 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                         widgetScope.$broadcast.apply(widgetScope, args);
                     });
                 });
-                try {
-                    injector.get("$route").reload();
-                } catch (e) {
-                    widgetScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
-                }
                 var properties = widgetConfig.exportProperties();
                 scope.$emit("exportPropertiesUpdated", properties);
                 widgetConfig.exportProperties = function(props) {
@@ -130,7 +133,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             }
             function bootstrapWidget(src, delay) {
                 var thisChangeId = ++changeCounter;
-                var manifest = src.match(/^\$app\$/) ? appContainer.getCurrentRoute() : widgets.getWidgetManifest(src);
+                var manifest = widgets.getWidgetManifest(src);
                 delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay).then(function(response) {
                     if (thisChangeId !== changeCounter) {
                         return;
@@ -170,22 +173,6 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             scope.$on("$destroy", function() {
                 changeCounter++;
                 unregisterInjector();
-            });
-        }
-    };
-} ]);
-
-"use strict";
-
-angular.module("angularWidgetInternal").directive("ngAppContainer", [ "appContainer", "$rootScope", function(appContainer, $rootScope) {
-    return {
-        restrict: "E",
-        priority: 999,
-        scope: {},
-        template: '<ng-widget src="src" delay="0"></ng-widget>',
-        link: function(scope) {
-            $rootScope.$on("$locationChangeSuccess", function() {
-                scope.src = "$app$" + appContainer.getCurrentRoute().route;
             });
         }
     };
@@ -351,34 +338,6 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
             },
             getServicesToShare: function() {
                 return servicesToShare;
-            }
-        };
-    } ];
-});
-
-"use strict";
-
-angular.module("angularWidgetInternal").provider("appContainer", function() {
-    var defaultRoute = {}, routes = {};
-    this.when = function(route, definition) {
-        routes[route] = definition;
-        return this;
-    };
-    this.otherwise = function(definition) {
-        defaultRoute = definition;
-        return this;
-    };
-    this.$get = [ "$location", function($location) {
-        return {
-            getCurrentRoute: function() {
-                var prefix = ($location.path().match(/\/[^\/]*/) || [])[0];
-                var route = angular.extend({
-                    route: prefix
-                }, routes[prefix] || defaultRoute);
-                if (route.redirectTo) {
-                    $location.path(route.redirectTo);
-                }
-                return route;
             }
         };
     } ];

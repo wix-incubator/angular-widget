@@ -10,7 +10,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
       hash: 1
     });
   })
-  .run(function ($injector, $rootScope, widgets) {
+  .run(function ($injector, $rootScope, widgets, $location) {
     function decorate(service, method, count) {
       var original = service[method];
       service[method] = function () {
@@ -21,7 +21,11 @@ angular.module('angularWidget', ['angularWidgetInternal'])
       };
     }
 
+    //TBD: this means that only the main app can decide on serviced to share
+    //this can be refactored so a widget can also configure the services for
+    //its own and its nested widgets.
     if (!window.angularWidget) {
+      //main app
       window.angularWidget = {};
       angular.forEach(widgets.getServicesToShare(), function (description, name) {
         var service = $injector.get(name);
@@ -29,6 +33,15 @@ angular.module('angularWidget', ['angularWidgetInternal'])
           decorate(service, method, count);
         });
         window.angularWidget[name] = service;
+      });
+    } else {
+      //widget
+      $rootScope.$evalAsync(function () {
+        if ($injector.has('$route')) {
+          $injector.get('$route').reload();
+        } else {
+          $rootScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
+        }
       });
     }
   })

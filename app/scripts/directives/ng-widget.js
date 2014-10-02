@@ -1,8 +1,7 @@
 'use strict';
 
 angular.module('angularWidgetInternal')
-  .directive('ngWidget', function ($http, $templateCache, $compile, $q, $timeout, $log, tagAppender, widgets,
-             appContainer, $rootScope, $location) {
+  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, $log, tagAppender, widgets, $rootScope) {
     return {
       restrict: 'E',
       priority: 999,
@@ -60,12 +59,6 @@ angular.module('angularWidgetInternal')
             });
           });
 
-          try {
-            injector.get('$route').reload();
-          } catch (e) {
-            widgetScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
-          }
-
           var properties = widgetConfig.exportProperties();
           scope.$emit('exportPropertiesUpdated', properties);
 
@@ -105,7 +98,7 @@ angular.module('angularWidgetInternal')
 
         function bootstrapWidget(src, delay) {
           var thisChangeId = ++changeCounter;
-          var manifest = src.match(/^\$app\$/) ? appContainer.getCurrentRoute() : widgets.getWidgetManifest(src);
+          var manifest = widgets.getWidgetManifest(src);
 
           delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay)
             .then(function (response) {
