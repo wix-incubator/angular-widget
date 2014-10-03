@@ -4,7 +4,7 @@ describe('Unit testing tagAppender service', function () {
   var headElement;
 
   beforeEach(function () {
-    module('angularWidget');
+    module('angularWidgetInternal');
     module({
       headElement: headElement = jasmine.createSpyObj('headElement', ['appendChild'])
     });

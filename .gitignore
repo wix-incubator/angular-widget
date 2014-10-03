@@ -18,3 +18,4 @@ replace.private.conf.js
 reference.ts
 .baseDir.ts
 .tscache
+Gemfile.lock

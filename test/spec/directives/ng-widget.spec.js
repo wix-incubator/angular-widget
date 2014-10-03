@@ -13,7 +13,7 @@ describe('Unit testing ngWidget directive', function () {
       }
     });
 
-    module('angularWidget');
+    module('angularWidgetInternal');
 
     module({
       tagAppender: tagAppender = jasmine.createSpy('tagAppender'),

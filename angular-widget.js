@@ -2,7 +2,29 @@
 
 angular.module("angularWidgetInternal", []);
 
-angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsProvider", function(widgetsProvider) {
+angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide", "$injector", function($provide, $injector) {
+    if (!$injector.has("$routeProvider")) {
+        return;
+    }
+    $provide.decorator("$rootScope", [ "$delegate", "$injector", function($delegate, $injector) {
+        var id, lastId, originalBroadcast = $delegate.$broadcast;
+        $delegate.$broadcast = function(name) {
+            var shouldAbort = false;
+            if (name === "$routeChangeSuccess") {
+                $injector.invoke([ "$route", "widgets", "$location", function($route, widgets, $location) {
+                    lastId = id;
+                    id = $route.current && $route.current.widgetId;
+                    if (id && id === lastId) {
+                        widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
+                        shouldAbort = true;
+                    }
+                } ]);
+            }
+            return shouldAbort ? null : originalBroadcast.apply(this, arguments);
+        };
+        return $delegate;
+    } ]);
+} ]).config([ "widgetsProvider", function(widgetsProvider) {
     widgetsProvider.addServiceToShare("$location", {
         url: 1,
         path: 1,

@@ -3,7 +3,7 @@
 describe('Unit testing widgets service', function () {
 
   beforeEach(function () {
-    module('angularWidget');
+    module('angularWidgetInternal');
   });
 
   it('should set manifest generator', function () {

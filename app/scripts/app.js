@@ -3,6 +3,31 @@
 angular.module('angularWidgetInternal', []);
 
 angular.module('angularWidget', ['angularWidgetInternal'])
+  .config(function ($provide, $injector) {
+    if (!$injector.has('$routeProvider')) {
+      return;
+    }
+    //this is a really ugly trick to prevent reloading of the ng-view in case
+    //an internal route changes, effecting only the router inside that view.
+    $provide.decorator('$rootScope', function ($delegate, $injector) {
+      var id, lastId, originalBroadcast = $delegate.$broadcast;
+      $delegate.$broadcast = function (name) {
+        var shouldAbort = false;
+        if (name === '$routeChangeSuccess') {
+          $injector.invoke(/* @ngInject */function ($route, widgets, $location) {
+            lastId = id;
+            id = $route.current && $route.current.widgetId;
+            if (id && id === lastId) {
+              widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
+              shouldAbort = true;
+            }
+          });
+        }
+        return shouldAbort ? null : originalBroadcast.apply(this, arguments);
+      };
+      return $delegate;
+    });
+  })
   .config(function (widgetsProvider) {
     //sharing the $location between everyone is the only way to have
     //a single source of truth about the current location.
