@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularWidgetInternal')
-  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, $log, tagAppender, widgets, $rootScope) {
+  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, tagAppender, widgets, $rootScope, $log) {
     return {
       restrict: 'E',
       priority: 999,
@@ -13,6 +13,18 @@ angular.module('angularWidgetInternal')
       },
       link: function (scope, element) {
         var changeCounter = 0, injector;
+
+        /* @ngInject */
+        function widgetConfigSection($provide, widgetConfigProvider) {
+          //force the widget to use the shared service instead of creating some instance
+          //since this is using a constant (which is available during config) to steal the
+          //show, we can theoretically use it to share providers, but that's for another day.
+          angular.forEach(widgets.getServicesToShare(), function (value, key) {
+            $provide.constant(key, value);
+          });
+
+          widgetConfigProvider.setParentInjectorScope(scope);
+        }
 
         function delayedPromise(promise, delay) {
           return $q.when(promise).then(function (result) {
@@ -61,29 +73,13 @@ angular.module('angularWidgetInternal')
             });
           });
 
-          var properties = widgetConfig.exportProperties();
-          scope.$emit('exportPropertiesUpdated', properties);
-
-          widgetConfig.exportProperties = function (props) {
-            return scope.$apply(function () {
-              angular.extend(properties, props);
-              scope.$emit('exportPropertiesUpdated', properties);
-              return properties;
-            });
-          };
-
-          widgetConfig.reportError = function () {
-            scope.$apply(function () {
-              scope.$emit('widgetError');
-            });
-          };
-
           scope.$watch('options', function (options) {
             widgetScope.$apply(function () {
               widgetConfig.setOptions(options);
             });
           }, true);
 
+          var properties = widgetConfig.exportProperties();
           if (!properties.loading) {
             scope.$emit('widgetLoaded');
           } else {
@@ -109,7 +105,13 @@ angular.module('angularWidgetInternal')
               }
               try {
                 var widgetElement = angular.element(response);
-                var modules = ['angularWidget', manifest.module].concat(manifest.config || []);
+                var modules = [
+                  'angularWidgetOnly',
+                  'angularWidget',
+                  widgetConfigSection,
+                  manifest.module
+                ].concat(manifest.config || []);
+
                 scope.$emit('widgetLoading');
                 injector = angular.bootstrap(widgetElement, modules);
                 handleNewInjector();

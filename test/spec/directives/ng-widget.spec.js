@@ -1,14 +1,17 @@
 'use strict';
 
 describe('Unit testing ngWidget directive', function () {
-  var tagAppender, widgetConfig, widgets, spies, element;
+  var tagAppender, widgetInjector, widgetConfig, widgetIsLoading, widgets, spies, element;
 
   beforeEach(function () {
-    angular.module('dummyWidget', [])
-      .value('widgetConfig', widgetConfig = {
-        exportProperties: jasmine.createSpy('exportProperties').andReturn({prop: 123}),
-        setOptions: jasmine.createSpy('setOptions')
-      });
+    widgetIsLoading = false;
+    angular.module('dummyWidget', []).run(function (widgetConfig) {
+      if (widgetIsLoading) {
+        widgetConfig.exportProperties({loading: true});
+      } else {
+        widgetConfig.exportProperties({prop: 123});
+      }
+    });
 
     module('angularWidget');
 
@@ -16,6 +19,7 @@ describe('Unit testing ngWidget directive', function () {
       tagAppender: tagAppender = jasmine.createSpy('tagAppender'),
       widgets: widgets = {
         getEventsToForward: jasmine.createSpy('getEventsToForward').andReturn([]),
+        getServicesToShare: jasmine.createSpy('getServicesToShare').andReturn([]),
         registerWidget: jasmine.createSpy('registerWidget'),
         unregisterWidget: jasmine.createSpy('unregisterWidget'),
         getWidgetManifest: function (name) {
@@ -57,6 +61,9 @@ describe('Unit testing ngWidget directive', function () {
     inject(function ($httpBackend, $timeout) {
       $httpBackend.flush();
       $timeout.flush(1000);
+
+      widgetInjector = element.find('div').injector();
+      widgetConfig = widgetInjector && widgetInjector.get('widgetConfig');
     });
   }
 
@@ -67,10 +74,10 @@ describe('Unit testing ngWidget directive', function () {
     flushDownload();
 
     expect(element.find('div').html()).toBe('123');
-    expect(element.injector()).not.toBe(element.find('div').injector());
-    expect(widgets.registerWidget).toHaveBeenCalledWith(element.find('div').injector());
+    expect(element.injector()).not.toBe(widgetInjector);
+    expect(widgets.registerWidget).toHaveBeenCalledWith(widgetInjector);
 
-    expect(widgetConfig.setOptions).toHaveBeenCalledWith(undefined);
+    expect(widgetConfig.getOptions()).toEqual({});
   });
 
   it('should emit events', function () {
@@ -97,7 +104,7 @@ describe('Unit testing ngWidget directive', function () {
     downloadWidgetSuccess();
     compileWidget();
 
-    widgetConfig.exportProperties.andReturn({loading: true});
+    widgetIsLoading = true;
     flushDownload();
 
     expect(spies.widgetLoaded).not.toHaveBeenCalled();
@@ -114,11 +121,11 @@ describe('Unit testing ngWidget directive', function () {
     $rootScope.options = {opt: 123};
     flushDownload();
 
-    expect(widgetConfig.setOptions).toHaveBeenCalledWith({opt: 123});
+    expect(widgetConfig.getOptions()).toEqual({opt: 123});
     $rootScope.$apply(function () {
       $rootScope.options.xxx = 456;
     });
-    expect(widgetConfig.setOptions).toHaveBeenCalledWith({opt: 123, xxx: 456});
+    expect(widgetConfig.getOptions()).toEqual({opt: 123, xxx: 456});
   }));
 
   it('should append the correct tags', inject(function ($rootScope) {
@@ -224,9 +231,8 @@ describe('Unit testing ngWidget directive', function () {
     downloadWidgetSuccess('stam');
 
     expect(element.html()).not.toBe('');
-    var injector = element.find('div').injector();
     $rootScope.$digest();
-    expect(widgets.unregisterWidget).toHaveBeenCalledWith(injector);
+    expect(widgets.unregisterWidget).toHaveBeenCalledWith(widgetInjector);
     expect(element.html()).toBe('');
   }));
 
@@ -237,7 +243,7 @@ describe('Unit testing ngWidget directive', function () {
     flushDownload();
 
     element.scope().$destroy();
-    expect(widgets.unregisterWidget).toHaveBeenCalledWith(element.find('div').injector());
+    expect(widgets.unregisterWidget).toHaveBeenCalledWith(widgetInjector);
   }));
 
   it('should not append the tags if in module exists', inject(function ($httpBackend, $rootScope, $compile) {
@@ -254,7 +260,7 @@ describe('Unit testing ngWidget directive', function () {
     downloadWidgetSuccess();
     compileWidget();
     flushDownload();
-    expect(element.find('div').injector().get('ngWidgetDirective')).toBeTruthy();
+    expect(widgetInjector.get('ngWidgetDirective')).toBeTruthy();
   });
 
   it('should run custom config block when bootstraping', function () {
@@ -267,7 +273,7 @@ describe('Unit testing ngWidget directive', function () {
     downloadWidgetSuccess();
     compileWidget();
     flushDownload();
-    expect(element.find('div').injector().get('shahata')).toBe(123);
+    expect(widgetInjector.get('shahata')).toBe(123);
   });
 
 });

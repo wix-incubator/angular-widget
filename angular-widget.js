@@ -11,41 +11,17 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "widgetsPr
         $$parse: 1
     });
     widgetsProvider.addEventToForward("$locationChangeStart");
-} ]).run([ "$injector", "$rootScope", "widgets", "$location", function($injector, $rootScope, widgets, $location) {
-    function decorate(service, method, count) {
-        var original = service[method];
-        service[method] = function() {
-            if (arguments.length >= count && !$rootScope.$$phase) {
-                $rootScope.$evalAsync();
-            }
-            return original.apply(service, arguments);
-        };
-    }
-    if (!window.angularWidget) {
-        window.angularWidget = {};
-        angular.forEach(widgets.getServicesToShare(), function(description, name) {
-            var service = $injector.get(name);
-            angular.forEach(description, function(count, method) {
-                decorate(service, method, count);
-            });
-            window.angularWidget[name] = service;
-        });
-    } else {
-        $rootScope.$evalAsync(function() {
-            $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
-        });
-    }
-} ]).config([ "$provide", function($provide) {
-    if (window.angularWidget) {
-        angular.forEach(window.angularWidget, function(value, key) {
-            $provide.constant(key, value);
-        });
-    }
+} ]);
+
+angular.module("angularWidgetOnly", []).run([ "$rootScope", "$location", function($rootScope, $location) {
+    $rootScope.$evalAsync(function() {
+        $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
+    });
 } ]);
 
 "use strict";
 
-angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "$log", "tagAppender", "widgets", "$rootScope", function($http, $templateCache, $q, $timeout, $log, tagAppender, widgets, $rootScope) {
+angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "tagAppender", "widgets", "$rootScope", "$log", function($http, $templateCache, $q, $timeout, tagAppender, widgets, $rootScope, $log) {
     return {
         restrict: "E",
         priority: 999,
@@ -57,6 +33,13 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
         },
         link: function(scope, element) {
             var changeCounter = 0, injector;
+            function widgetConfigSection($provide, widgetConfigProvider) {
+                angular.forEach(widgets.getServicesToShare(), function(value, key) {
+                    $provide.constant(key, value);
+                });
+                widgetConfigProvider.setParentInjectorScope(scope);
+            }
+            widgetConfigSection.$inject = [ "$provide", "widgetConfigProvider" ];
             function delayedPromise(promise, delay) {
                 return $q.when(promise).then(function(result) {
                     return $timeout(function() {
@@ -100,25 +83,12 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                         }
                     });
                 });
-                var properties = widgetConfig.exportProperties();
-                scope.$emit("exportPropertiesUpdated", properties);
-                widgetConfig.exportProperties = function(props) {
-                    return scope.$apply(function() {
-                        angular.extend(properties, props);
-                        scope.$emit("exportPropertiesUpdated", properties);
-                        return properties;
-                    });
-                };
-                widgetConfig.reportError = function() {
-                    scope.$apply(function() {
-                        scope.$emit("widgetError");
-                    });
-                };
                 scope.$watch("options", function(options) {
                     widgetScope.$apply(function() {
                         widgetConfig.setOptions(options);
                     });
                 }, true);
+                var properties = widgetConfig.exportProperties();
                 if (!properties.loading) {
                     scope.$emit("widgetLoaded");
                 } else {
@@ -140,7 +110,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                     }
                     try {
                         var widgetElement = angular.element(response);
-                        var modules = [ "angularWidget", manifest.module ].concat(manifest.config || []);
+                        var modules = [ "angularWidgetOnly", "angularWidget", widgetConfigSection, manifest.module ].concat(manifest.config || []);
                         scope.$emit("widgetLoading");
                         injector = angular.bootstrap(widgetElement, modules);
                         handleNewInjector();
@@ -247,24 +217,53 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
 
 "use strict";
 
-angular.module("angularWidgetInternal").factory("widgetConfig", [ "$log", function($log) {
-    var options = {};
-    var props = {};
-    return {
-        exportProperties: function(obj) {
-            return angular.extend(props, obj || {});
+angular.module("angularWidgetInternal").provider("widgetConfig", function() {
+    var parentInjectorScope = {
+        $root: {},
+        $apply: function(fn) {
+            fn();
         },
-        reportError: function() {
-            $log.warn("widget reported an error");
-        },
-        getOptions: function() {
-            return options;
-        },
-        setOptions: function(newOptions) {
-            angular.copy(newOptions, options);
-        }
+        $emit: angular.noop
     };
-} ]);
+    this.setParentInjectorScope = function(scope) {
+        parentInjectorScope = scope;
+    };
+    function safeApply(fn) {
+        if (parentInjectorScope.$root.$$phase) {
+            fn();
+        } else {
+            parentInjectorScope.$apply(fn);
+        }
+    }
+    this.$get = [ "$log", function($log) {
+        var options = {};
+        var properties = {};
+        return {
+            exportProperties: function(props) {
+                if (props) {
+                    safeApply(function() {
+                        angular.extend(properties, props);
+                        parentInjectorScope.$emit("exportPropertiesUpdated", properties);
+                    });
+                }
+                return properties;
+            },
+            reportError: function() {
+                safeApply(function() {
+                    if (!parentInjectorScope.$emit("widgetError")) {
+                        $log.warn("widget reported an error");
+                    }
+                });
+            },
+            getOptions: function() {
+                return options;
+            },
+            setOptions: function(newOptions) {
+                angular.copy(newOptions, options);
+            }
+        };
+    } ];
+});
 
 "use strict";
 
@@ -281,8 +280,25 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
     this.addServiceToShare = function(name, description) {
         servicesToShare[name] = description;
     };
-    this.$get = [ "$injector", function($injector) {
+    this.$get = [ "$injector", "$rootScope", function($injector, $rootScope) {
         var widgets = [];
+        var instancesToShare = {};
+        function decorate(service, method, count) {
+            var original = service[method];
+            service[method] = function() {
+                if (arguments.length >= count && !$rootScope.$$phase) {
+                    $rootScope.$evalAsync();
+                }
+                return original.apply(service, arguments);
+            };
+        }
+        angular.forEach(servicesToShare, function(description, name) {
+            var service = $injector.get(name);
+            angular.forEach(description, function(count, method) {
+                decorate(service, method, count);
+            });
+            instancesToShare[name] = service;
+        });
         function notifyInjector(injector, args) {
             var scope = injector.get("$rootScope");
             var event;
@@ -337,7 +353,7 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
                 return eventsToForward;
             },
             getServicesToShare: function() {
-                return servicesToShare;
+                return instancesToShare;
             }
         };
     } ];

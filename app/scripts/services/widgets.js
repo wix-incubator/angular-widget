@@ -18,8 +18,29 @@ angular.module('angularWidgetInternal')
       servicesToShare[name] = description;
     };
 
-    this.$get = function ($injector) {
+    this.$get = function ($injector, $rootScope) {
       var widgets = [];
+      var instancesToShare = {};
+
+      //this will wrap setters so that we can run a digest loop in main app
+      //after some shared service state is changed.
+      function decorate(service, method, count) {
+        var original = service[method];
+        service[method] = function () {
+          if (arguments.length >= count && !$rootScope.$$phase) {
+            $rootScope.$evalAsync();
+          }
+          return original.apply(service, arguments);
+        };
+      }
+
+      angular.forEach(servicesToShare, function (description, name) {
+        var service = $injector.get(name);
+        angular.forEach(description, function (count, method) {
+          decorate(service, method, count);
+        });
+        instancesToShare[name] = service;
+      });
 
       function notifyInjector(injector, args) {
         var scope = injector.get('$rootScope');
@@ -79,7 +100,7 @@ angular.module('angularWidgetInternal')
           return eventsToForward;
         },
         getServicesToShare: function () {
-          return servicesToShare;
+          return instancesToShare;
         }
       };
     };
