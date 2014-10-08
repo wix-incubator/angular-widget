@@ -13,8 +13,8 @@ angular.module('mainWidget', ['angularWidget'])
     ];
   });
 
-angular.module('badWidget', ['angularWidget', 'ngCookies'])
-  .controller('MainCtrl', function ($scope, $cookies, widgetConfig) {
+angular.module('badWidget', ['angularWidget'])
+  .controller('MainCtrl', function ($scope, widgetConfig) {
     widgetConfig.exportProperties({title: 'bad widget title'});
     $scope.widgetOptions = widgetConfig.getOptions();
     $scope.awesomeThings = [

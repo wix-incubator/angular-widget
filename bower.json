@@ -26,7 +26,6 @@
     "angular-mocks": "~1.2.0",
     "es5-shim": "~2.1.0",
     "angular-widget": "~0.1.1",
-    "angular-cookies": "~1.2.16",
     "angular-route": "~1.2.23"
   }
 }
