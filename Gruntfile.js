@@ -12,30 +12,29 @@ module.exports = function (grunt) {
     port: 9000,
     preloadModule: 'angularWidgetApp',
     unitTestFiles: unitTestFiles,
-    protractor: true
+    protractor: true,
+    bowerComponent: true
   });
 
-  var yeoman = grunt.config('yeoman');
-  yeoman.local =  'http://localhost:<%= connect.options.port %>/';
-  grunt.config('yeoman', yeoman);
+  grunt.modifyTask('yeoman', {
+    local: 'http://localhost:<%= connect.options.port %>/'
+  });
 
-  var karma = grunt.config('karma');
-  karma.teamcity.coverageReporter = {dir : 'coverage/', type: 'lcov'};
-  grunt.config('karma', karma);
+  grunt.modifyTask('karma', {
+    teamcity: {
+      coverageReporter: {dir : 'coverage/', type: 'lcov'}
+    }
+  });
 
-  var uglify = grunt.config('uglify');
-  uglify.options =  {mangle: false, compress: false, beautify: true};
-  grunt.config('uglify', uglify);
+  grunt.modifyTask('copy', {
+    js: {
+      expand: true,
+      cwd: 'dist/scripts',
+      dest: '',
+      src: 'angular-widget.js'
+    }
+  });
 
-  var copy = grunt.config('copy');
-  copy.js =  {
-    expand: true,
-    cwd: 'dist/scripts',
-    dest: '',
-    src: 'angular-widget.js'
-  };
-  grunt.config('copy', copy);
+  grunt.hookTask('build').push('copy:js');
 
-  grunt.renameTask('build', 'build.old');
-  grunt.registerTask('build', ['build.old', 'copy:js']);
 };
