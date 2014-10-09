@@ -13,7 +13,12 @@ module.exports = function (grunt) {
     preloadModule: 'angularWidgetApp',
     unitTestFiles: unitTestFiles,
     protractor: true,
-    bowerComponent: true
+    bowerComponent: true,
+    proxies: {
+      html5mode: function (req, res) {
+        res.end(grunt.file.read('app/index.html'));
+      }
+    }
   });
 
   grunt.modifyTask('yeoman', {

@@ -3,7 +3,7 @@
 describe('Unit testing widget container', function () {
 
   beforeEach(function () {
-    module('angularWidgetApp');
+    module('app1');
   });
 
   it('should start as loading', inject(function ($controller, $rootScope) {

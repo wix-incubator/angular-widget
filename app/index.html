@@ -1,36 +1,23 @@
 <!doctype html>
 <html ng-app="angularWidgetApp">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>angularWidget</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
-    <meta name="robots" content="noindex, nofollow">
+    <base href="/">
+    <title>angularWidgetDemo</title>
     <!-- build:css({.tmp,app}) styles/demo.css -->
     <link rel="stylesheet" href="styles/demo.css">
     <!-- endbuild -->  </head>
-  <body ng-init="widgets = [{id: 0, src: 'main'}]; options = {collapse: true}">
-    <button ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'main'})">add...</button>
-    <button ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'bad'})">add bad...</button>
-    <button ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</button>
-    <br/><br/><br/>
-
-    <div ng-repeat="widget in widgets track by widget.id" style="float: left; position: relative; padding-right: 10px">
-      <div ng-controller="widgetContainer">
-        <span ng-show="title" ng-bind="title"></span>
-        <button ng-click="widgets.splice($index, 1)">del</button>
-        <div ng-show="isLoading">LOADING...</div>
-        <div ng-show="isError">ERROR... <button ng-click="reload()">reload</button></div>
-        <ng-widget class="container" src="widget.src" options="options" ng-show="!isLoading && !isError"></ng-widget>
-      </div>
-    </div>
-
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+  <body ng-init="navigationCount = 0">
+    <a ng-repeat="app in ['app1', 'app2', 'app3']" ng-href="#/{{app}}"
+      ng-click="$parent.navigationCount = navigationCount + 1"
+      style="padding: 5px">{{app}}</a>
+    <span>{{navigationCount}}<br/><br/>
+    <ng-view></ng-view>
 
     <!-- build:js({.tmp,app}) scripts/demo.js -->
     <script src="scripts/demo.js"></script>
-    <script src="scripts/controllers/widget-container.js"></script>
     <!-- endbuild -->
 
     <!-- build:js({.tmp,app}) scripts/angular-widget.js -->
