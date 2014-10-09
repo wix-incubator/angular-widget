@@ -1,9 +1,9 @@
 'use strict';
 
 angular.module('angularWidgetApp', ['ngRoute', 'angularWidget'])
-  .config(function setHtml5Mode($locationProvider) {
-    $locationProvider.html5Mode(true);
-  })
+  // .config(function setHtml5Mode($locationProvider) {
+  //   $locationProvider.html5Mode(true);
+  // })
   .config(function initializeRouteProvider($routeProvider) {
     ['app1', 'app2', 'app3'].forEach(function (applicationName) {
       $routeProvider.when('/' + applicationName + ':eatall*?', {
