@@ -17,12 +17,9 @@ describe('Unit testing ngWidget directive', function () {
 
     module({
       tagAppender: tagAppender = jasmine.createSpy('tagAppender'),
-      widgets: widgets = {
-        getEventsToForward: jasmine.createSpy('getEventsToForward').andReturn([]),
-        getServicesToShare: jasmine.createSpy('getServicesToShare').andReturn([]),
-        registerWidget: jasmine.createSpy('registerWidget'),
-        unregisterWidget: jasmine.createSpy('unregisterWidget'),
-        getWidgetManifest: function (name) {
+    }, function (widgetsProvider) {
+      widgetsProvider.setManifestGenerator(function () {
+        return function (name) {
           return {
             module: name + 'Widget',
             html: 'views/' + name + '-widget.html',
@@ -31,8 +28,11 @@ describe('Unit testing ngWidget directive', function () {
               'styles/' +  name + '-widget.css'
             ]
           };
-        }
-      }
+        };
+      });
+
+      widgetsProvider.addServiceToShare('$location');
+      widgetsProvider.addEventToForward('$locationChangeStart');
     });
   });
 
@@ -44,11 +44,17 @@ describe('Unit testing ngWidget directive', function () {
     });
   }
 
-  function compileWidget(scope) {
-    inject(function ($compile, $rootScope) {
+  function compileWidget(scope, delay) {
+    inject(function ($compile, $rootScope, _widgets_) {
+      widgets = _widgets_;
+      spyOn(widgets, 'registerWidget').andCallThrough();
+      spyOn(widgets, 'unregisterWidget').andCallThrough();
+
       scope = scope || $rootScope;
       scope.widget = scope.widget || 'dummy';
-      element = $compile('<ng-widget src="widget" options="options"></ng-widget>')(scope || $rootScope);
+      element = $compile('<ng-widget src="widget" options="options"' +
+                         (delay === undefined ? '' : ' delay="' + delay + '"') +
+                         '></ng-widget>')(scope || $rootScope);
 
       spies = jasmine.createSpyObj('spies', ['exportPropertiesUpdated', 'widgetLoaded', 'widgetError']);
       $rootScope.$on('exportPropertiesUpdated', spies.exportPropertiesUpdated);
@@ -79,6 +85,72 @@ describe('Unit testing ngWidget directive', function () {
 
     expect(widgetConfig.getOptions()).toEqual({});
   });
+
+  it('should respect delay attribute', inject(function ($timeout) {
+    downloadWidgetSuccess();
+    compileWidget(undefined, 2000);
+
+    flushDownload();
+    expect(widgetInjector).toBeUndefined();
+
+    $timeout.flush(1000);
+    widgetInjector = element.find('div').injector();
+    expect(widgetInjector).toBeDefined();
+  }));
+
+  it('should respect delay attribute for errors too', inject(function ($httpBackend, $timeout) {
+    $httpBackend.expectGET('views/dummy-widget.html').respond(500, 'wtf');
+    compileWidget(undefined, 2000);
+
+    flushDownload();
+    expect(spies.widgetError).not.toHaveBeenCalled();
+
+    $timeout.flush(1000);
+    expect(spies.widgetError).toHaveBeenCalled();
+  }));
+
+  it('should share services that were declared as shared', inject(function ($rootScope, $location) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    expect(widgetInjector.get('$rootScope')).not.toBe($rootScope);
+    expect(widgetInjector.get('$location')).toBe($location);
+  }));
+
+  it('should forward events that were declared as forwarded', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var eventSpy = jasmine.createSpy('$locationChangeStart');
+    var eventSpy2 = jasmine.createSpy('$locationChangeSuccess');
+
+    widgetScope.$on('$locationChangeStart', eventSpy);
+    widgetScope.$on('$locationChangeSuccess', eventSpy2);
+
+    $rootScope.$broadcast('$locationChangeStart', 1, 2, 3);
+    $rootScope.$broadcast('$locationChangeSuccess', 1, 2, 3);
+
+    expect(eventSpy).toHaveBeenCalledWith(jasmine.any(Object), 1, 2, 3);
+    expect(eventSpy2).not.toHaveBeenCalled();
+  }));
+
+  it('should allow widget to prevent default', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var eventSpy = jasmine.createSpy('$locationChangeStart');
+
+    widgetScope.$on('$locationChangeStart', eventSpy);
+    expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(false);
+
+    eventSpy.andCallFake(function (e) { e.preventDefault(); });
+    expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
+  }));
 
   it('should emit events', function () {
     downloadWidgetSuccess();
@@ -263,7 +335,7 @@ describe('Unit testing ngWidget directive', function () {
     expect(widgetInjector.get('ngWidgetDirective')).toBeTruthy();
   });
 
-  it('should run custom config block when bootstraping', function () {
+  it('should run custom config block when bootstraping', inject(function (widgets) {
     var hook = widgets.getWidgetManifest;
     widgets.getWidgetManifest = function () {
       return angular.extend(hook.apply(widgets, arguments), {config: [function ($provide) {
@@ -274,6 +346,6 @@ describe('Unit testing ngWidget directive', function () {
     compileWidget();
     flushDownload();
     expect(widgetInjector.get('shahata')).toBe(123);
-  });
+  }));
 
 });

@@ -4,6 +4,8 @@ describe('Unit testing widget container', function () {
 
   beforeEach(function () {
     module('app1');
+    module('app2');
+    module('app3');
   });
 
   it('should start as loading', inject(function ($controller, $rootScope) {
@@ -39,6 +41,17 @@ describe('Unit testing widget container', function () {
     expect($rootScope.isLoading).toBeTruthy();
     expect($rootScope.isError).toBeFalsy();
     expect(spy).toHaveBeenCalled();
+  }));
+
+  it('should have a manifest generator', inject(function (widgets) {
+    expect(widgets.getWidgetManifest('shahata')).toEqual({
+      module: 'shahata',
+      html: 'views/shahata.html',
+      files: [
+        'scripts/controllers/shahata.js',
+        'styles/shahata.css'
+      ]
+    });
   }));
 
 });

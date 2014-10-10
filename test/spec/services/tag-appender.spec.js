@@ -32,6 +32,12 @@ describe('Unit testing tagAppender service', function () {
     inject(function (tagAppender, $document, $interval, $rootScope) {
       var success = jasmine.createSpy('success');
       tagAppender('dummy.css', 'css').then(success);
+
+      $document[0].styleSheets.push({href: 'not-dummy.css'});
+      $interval.flush(50);
+      $rootScope.$digest();
+      expect(success).not.toHaveBeenCalled();
+
       $document[0].styleSheets.push({href: 'dummy.css'});
       $interval.flush(50);
       $rootScope.$digest();

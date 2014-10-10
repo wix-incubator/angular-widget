@@ -39,6 +39,18 @@ describe('Unit testing widgets service', function () {
       });
     });
 
+    it('should take last generator into account only if it is not undefined', function () {
+      module(function (widgetsProvider) {
+        widgetsProvider.setManifestGenerator(function () { return angular.identity; });
+        widgetsProvider.setManifestGenerator(function () {
+          return function () { return undefined; };
+        });
+      });
+      inject(function (widgets) {
+        expect(widgets.getWidgetManifest('shahata')).toBe('shahata');
+      });
+    });
+
     it('should take generator with higher priority', function () {
       module(function (widgetsProvider) {
         widgetsProvider.setManifestGenerator(function () {
