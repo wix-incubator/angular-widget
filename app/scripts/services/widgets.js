@@ -36,9 +36,15 @@ angular.module('angularWidgetInternal')
 
       angular.forEach(servicesToShare, function (description, name) {
         var service = $injector.get(name);
-        angular.forEach(description, function (count, method) {
-          decorate(service, method, count);
-        });
+        if (angular.isArray(description)) {
+          description.forEach(function (method) {
+            decorate(service, method, 0);
+          });
+        } else {
+          angular.forEach(description, function (count, method) {
+            decorate(service, method, count);
+          });
+        }
         instancesToShare[name] = service;
       });
 
