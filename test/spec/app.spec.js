@@ -32,7 +32,13 @@ describe('Unit testing routing hacks', function () {
       expect(eventSpy).toHaveBeenCalled();
       eventSpy.reset();
 
-      $route.current.widgetId = 'shahata';
+      $route.current.locals = {};
+      $rootScope.$on('$routeChangeSuccess', eventSpy);
+      $rootScope.$broadcast('$routeChangeSuccess');
+      expect(eventSpy).toHaveBeenCalled();
+      eventSpy.reset();
+
+      $route.current.locals.appName = 'shahata';
       $rootScope.$on('$routeChangeSuccess', eventSpy);
       $rootScope.$broadcast('$routeChangeSuccess');
       expect(eventSpy).toHaveBeenCalled();

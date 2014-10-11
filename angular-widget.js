@@ -13,7 +13,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
             if (name === "$routeChangeSuccess") {
                 $injector.invoke([ "$route", "widgets", "$location", function($route, widgets, $location) {
                     lastId = id;
-                    id = $route.current && $route.current.widgetId;
+                    id = $route.current && $route.current.locals && $route.current.locals.appName;
                     if (id && id === lastId) {
                         widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
                         shouldAbort = true;

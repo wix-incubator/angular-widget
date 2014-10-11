@@ -12,9 +12,10 @@ angular.module('angularWidgetApp', ['ngRoute', 'angularWidget'])
           $scope.src = appName;
         },
         resolve: {
+          //we must have this locals param called appName in order for
+          //nested routes to work correctly
           appName: function () { return applicationName; }
         },
-        widgetId: applicationName,
         reloadOnSearch: false
       });
     });
