@@ -11,6 +11,8 @@ One of the main problems people discover in angular when they try to write  a ve
 
 But that's just the start! Widgets can actually be full blown applications with their own router. (both angular-route and ui-router are supported) See the demo page for an example that uses angular-route to host three lazy loaded applications - one uses ui-router internally, one uses angular-route and the third displays some widget (widgets within widgets, whoa...)
 
+See https://github.com/wix/angular-widget/blob/master/app/scripts/demo.js for an example of how you would typically configure a hosting application to run multiple lazy loaded applications on different routes.
+
 ## Installation
 
 Install using bower
