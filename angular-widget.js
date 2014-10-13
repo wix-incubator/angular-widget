@@ -22,10 +22,15 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
             }
             return shouldAbort ? null : originalBroadcast.apply(this, arguments);
         };
+        var suspendListener = false;
         $delegate.$on("$routeUpdate", function() {
-            $injector.invoke([ "widgets", "$location", function(widgets, $location) {
-                widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
-            } ]);
+            if (!suspendListener) {
+                $injector.invoke([ "widgets", "$location", function(widgets, $location) {
+                    suspendListener = true;
+                    widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
+                    suspendListener = false;
+                } ]);
+            }
         });
         return $delegate;
     } ]);

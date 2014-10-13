@@ -29,10 +29,17 @@ angular.module('angularWidget', ['angularWidgetInternal'])
         return shouldAbort ? null : originalBroadcast.apply(this, arguments);
       };
 
+      //sending $locationChangeSuccess will cause another $routeUpdate
+      //so we need this ugly flag to prevent call stack overflow
+      var suspendListener = false;
       $delegate.$on('$routeUpdate', function () {
-        $injector.invoke(/* @ngInject */function (widgets, $location) {
-          widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
-        });
+        if (!suspendListener) {
+          $injector.invoke(/* @ngInject */function (widgets, $location) {
+            suspendListener = true;
+            widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
+            suspendListener = false;
+          });
+        }
       });
 
       return $delegate;

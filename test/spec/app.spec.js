@@ -16,6 +16,9 @@ describe('Unit testing routing hacks', function () {
   });
 
   it('should notify widgets on location change when route updates', inject(function ($rootScope) {
+    notifyWidgets.andCallFake(function () {
+      $rootScope.$broadcast('$routeUpdate');
+    });
     $rootScope.$broadcast('$routeUpdate');
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
