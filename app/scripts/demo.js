@@ -6,7 +6,7 @@ angular.module('angularWidgetApp', ['ngRoute', 'angularWidget'])
   // })
   .config(function initializeRouteProvider($routeProvider) {
     ['app1', 'app2', 'app3'].forEach(function (applicationName) {
-      $routeProvider.when('/' + applicationName + ':eatall*?', {
+      $routeProvider.when('/' + applicationName + '/:eatall*?', {
         template: '<ng-widget src="src" delay="0"></ng-widget>',
         controller: function AppContainerController(appName, $scope) {
           $scope.src = appName;
@@ -21,7 +21,7 @@ angular.module('angularWidgetApp', ['ngRoute', 'angularWidget'])
     });
 
     $routeProvider.otherwise({
-      redirectTo: '/app1'
+      redirectTo: '/app1/'
     });
   })
   .config(function initializemanifestGenerator(widgetsProvider) {

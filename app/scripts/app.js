@@ -11,6 +11,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
     //an internal route changes, effecting only the router inside that view.
     $provide.decorator('$rootScope', function ($delegate, $injector) {
       var id, lastId, originalBroadcast = $delegate.$broadcast;
+
       $delegate.$broadcast = function (name) {
         var shouldAbort = false;
         if (name === '$routeChangeSuccess') {
@@ -25,6 +26,13 @@ angular.module('angularWidget', ['angularWidgetInternal'])
         }
         return shouldAbort ? null : originalBroadcast.apply(this, arguments);
       };
+
+      $delegate.$on('$routeUpdate', function () {
+        $injector.invoke(/* @ngInject */function (widgets, $location) {
+          widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
+        });
+      });
+
       return $delegate;
     });
   })
