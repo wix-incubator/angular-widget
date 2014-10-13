@@ -10,15 +10,17 @@ angular.module('angularWidget', ['angularWidgetInternal'])
     //this is a really ugly trick to prevent reloading of the ng-view in case
     //an internal route changes, effecting only the router inside that view.
     $provide.decorator('$rootScope', function ($delegate, $injector) {
-      var id, lastId, originalBroadcast = $delegate.$broadcast;
+      var next, last, originalBroadcast = $delegate.$broadcast;
 
       $delegate.$broadcast = function (name) {
         var shouldAbort = false;
         if (name === '$routeChangeSuccess') {
           $injector.invoke(/* @ngInject */function ($route, widgets, $location) {
-            lastId = id;
-            id = $route.current && $route.current.locals && $route.current.locals.appName;
-            if (id && id === lastId) {
+            last = next;
+            next = $route.current;
+            if (next && last && next.$$route === last.$$route &&
+                next.locals && next.locals.$template &&
+                next.locals.$template.indexOf('<ng-widget') !== -1) {
               widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
               shouldAbort = true;
             }

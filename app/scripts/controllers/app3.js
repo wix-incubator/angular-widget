@@ -4,7 +4,7 @@ angular.module('app3', ['ui.router']).config(function ($stateProvider, $urlRoute
   ['sub1', 'sub2', 'sub3'].forEach(function (applicationName) {
     $stateProvider.state(applicationName, {
       url: '/app3/' + applicationName,
-      template: '<div>ui-view / ' + applicationName + '</div>',
+      template: '<div>ui-view / ' + applicationName + '</div>'
     });
   });
 

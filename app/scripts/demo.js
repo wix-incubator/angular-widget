@@ -8,13 +8,8 @@ angular.module('angularWidgetApp', ['ngRoute', 'angularWidget'])
     ['app1', 'app2', 'app3'].forEach(function (applicationName) {
       $routeProvider.when('/' + applicationName + '/:eatall*?', {
         template: '<ng-widget src="src" delay="0"></ng-widget>',
-        controller: function AppContainerController(appName, $scope) {
-          $scope.src = appName;
-        },
-        resolve: {
-          //we must have this locals param called appName in order for
-          //nested routes to work correctly
-          appName: function () { return applicationName; }
+        controller: function ($scope) {
+          $scope.src = applicationName;
         },
         reloadOnSearch: false
       });

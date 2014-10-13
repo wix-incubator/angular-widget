@@ -7,14 +7,14 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
         return;
     }
     $provide.decorator("$rootScope", [ "$delegate", "$injector", function($delegate, $injector) {
-        var id, lastId, originalBroadcast = $delegate.$broadcast;
+        var next, last, originalBroadcast = $delegate.$broadcast;
         $delegate.$broadcast = function(name) {
             var shouldAbort = false;
             if (name === "$routeChangeSuccess") {
                 $injector.invoke([ "$route", "widgets", "$location", function($route, widgets, $location) {
-                    lastId = id;
-                    id = $route.current && $route.current.locals && $route.current.locals.appName;
-                    if (id && id === lastId) {
+                    last = next;
+                    next = $route.current;
+                    if (next && last && next.$$route === last.$$route && next.locals && next.locals.$template && next.locals.$template.indexOf("<ng-widget") !== -1) {
                         widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
                         shouldAbort = true;
                     }
@@ -22,6 +22,11 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
             }
             return shouldAbort ? null : originalBroadcast.apply(this, arguments);
         };
+        $delegate.$on("$routeUpdate", function() {
+            $injector.invoke([ "widgets", "$location", function(widgets, $location) {
+                widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
+            } ]);
+        });
         return $delegate;
     } ]);
 } ]).config([ "widgetsProvider", function(widgetsProvider) {
