@@ -1,7 +1,7 @@
 Angular Widget [![Build Status](https://travis-ci.org/wix/angular-widget.svg?branch=master)](https://travis-ci.org/wix/angular-widget) [![Coverage Status](https://coveralls.io/repos/wix/angular-widget/badge.png?branch=master)](https://coveralls.io/r/wix/angular-widget?branch=master)
 ================
 
-Lazy load isolated micro-apps in [AngularJS](http://www.angularjs.org)
+Lazy load isolated micro-apps in [Angular](http://www.angularjs.org)
 
 Demo: http://shahata.github.io/angular-widget/
 
