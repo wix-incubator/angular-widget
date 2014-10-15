@@ -70,6 +70,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                     $provide.constant(key, value);
                 });
                 widgetConfigProvider.setParentInjectorScope(scope);
+                widgetConfigProvider.setOptions(scope.options);
             }
             widgetConfigSection.$inject = [ "$provide", "widgetConfigProvider" ];
             function delayedPromise(promise, delay) {
@@ -257,8 +258,12 @@ angular.module("angularWidgetInternal").provider("widgetConfig", function() {
         },
         $emit: angular.noop
     };
+    var options = {};
     this.setParentInjectorScope = function(scope) {
         parentInjectorScope = scope;
+    };
+    this.setOptions = function(newOptions) {
+        angular.copy(newOptions, options);
     };
     function safeApply(fn) {
         if (parentInjectorScope.$root.$$phase) {
@@ -268,7 +273,6 @@ angular.module("angularWidgetInternal").provider("widgetConfig", function() {
         }
     }
     this.$get = [ "$log", function($log) {
-        var options = {};
         var properties = {};
         return {
             exportProperties: function(props) {

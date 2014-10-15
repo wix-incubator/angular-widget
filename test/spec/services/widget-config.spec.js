@@ -63,12 +63,25 @@ describe('Unit testing widgetConfig service', function () {
     }));
   });
 
-  it('should get/set options', inject(function (widgetConfig) {
-    var options = {a: 1};
-    expect(widgetConfig.getOptions()).toEqual({});
-    widgetConfig.setOptions(options);
-    expect(widgetConfig.getOptions()).toEqual(options);
-    expect(widgetConfig.getOptions()).not.toBe(options);
-  }));
+  describe('options', function () {
+    it('should get/set options', inject(function (widgetConfig) {
+      var options = {a: 1};
+      expect(widgetConfig.getOptions()).toEqual({});
+      widgetConfig.setOptions(options);
+      expect(widgetConfig.getOptions()).toEqual(options);
+      expect(widgetConfig.getOptions()).not.toBe(options);
+    }));
+
+    it('should set options from provider', function () {
+      var options = {a: 1};
+      module(function (widgetConfigProvider) {
+        widgetConfigProvider.setOptions(options);
+      });
+      inject(function (widgetConfig) {
+        expect(widgetConfig.getOptions()).toEqual(options);
+        expect(widgetConfig.getOptions()).not.toBe(options);
+      });
+    });
+  });
 
 });

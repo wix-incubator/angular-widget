@@ -24,6 +24,7 @@ angular.module('angularWidgetInternal')
           });
 
           widgetConfigProvider.setParentInjectorScope(scope);
+          widgetConfigProvider.setOptions(scope.options);
         }
 
         function delayedPromise(promise, delay) {

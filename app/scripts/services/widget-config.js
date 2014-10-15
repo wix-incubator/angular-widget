@@ -8,8 +8,14 @@ angular.module('angularWidgetInternal')
       $emit: angular.noop
     };
 
+    var options = {};
+
     this.setParentInjectorScope = function (scope) {
       parentInjectorScope = scope;
+    };
+
+    this.setOptions = function (newOptions) {
+      angular.copy(newOptions, options);
     };
 
     function safeApply(fn) {
@@ -21,7 +27,6 @@ angular.module('angularWidgetInternal')
     }
 
     this.$get = function ($log) {
-      var options = {};
       var properties = {};
 
       return {

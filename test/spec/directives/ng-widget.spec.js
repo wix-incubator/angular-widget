@@ -200,6 +200,18 @@ describe('Unit testing ngWidget directive', function () {
     expect(widgetConfig.getOptions()).toEqual({opt: 123, xxx: 456});
   }));
 
+  it('should have correct options in run block', inject(function ($rootScope) {
+    angular.module('dummyWidget').run(function (widgetConfig) {
+      expect(widgetConfig.getOptions()).toEqual({opt: 123});
+    });
+
+    downloadWidgetSuccess();
+    compileWidget();
+
+    $rootScope.options = {opt: 123};
+    flushDownload();
+  }));
+
   it('should append the correct tags', inject(function ($rootScope) {
     downloadWidgetSuccess();
     compileWidget();
