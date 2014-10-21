@@ -13,7 +13,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
       var next, last, originalBroadcast = $delegate.$broadcast;
 
       $delegate.$broadcast = function (name) {
-        var shouldAbort = false;
+        var shouldMute = false;
         if (name === '$routeChangeSuccess') {
           $injector.invoke(/* @ngInject */function ($route, widgets, $location) {
             last = next;
@@ -22,11 +22,14 @@ angular.module('angularWidget', ['angularWidgetInternal'])
                 next.locals && next.locals.$template &&
                 next.locals.$template.indexOf('<ng-widget') !== -1) {
               widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
-              shouldAbort = true;
+              shouldMute = true;
             }
           });
         }
-        return shouldAbort ? null : originalBroadcast.apply(this, arguments);
+        if (shouldMute) {
+          arguments[0] = '$routeChangeMuted';
+        }
+        return originalBroadcast.apply(this, arguments);
       };
 
       //sending $locationChangeSuccess will cause another $routeUpdate

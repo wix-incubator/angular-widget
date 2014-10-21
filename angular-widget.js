@@ -9,18 +9,21 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
     $provide.decorator("$rootScope", [ "$delegate", "$injector", function($delegate, $injector) {
         var next, last, originalBroadcast = $delegate.$broadcast;
         $delegate.$broadcast = function(name) {
-            var shouldAbort = false;
+            var shouldMute = false;
             if (name === "$routeChangeSuccess") {
                 $injector.invoke([ "$route", "widgets", "$location", function($route, widgets, $location) {
                     last = next;
                     next = $route.current;
                     if (next && last && next.$$route === last.$$route && next.locals && next.locals.$template && next.locals.$template.indexOf("<ng-widget") !== -1) {
                         widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
-                        shouldAbort = true;
+                        shouldMute = true;
                     }
                 } ]);
             }
-            return shouldAbort ? null : originalBroadcast.apply(this, arguments);
+            if (shouldMute) {
+                arguments[0] = "$routeChangeMuted";
+            }
+            return originalBroadcast.apply(this, arguments);
         };
         var suspendListener = false;
         $delegate.$on("$routeUpdate", function() {

@@ -23,17 +23,20 @@ describe('Unit testing routing hacks', function () {
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
 
-  it('should prevent route change if widget did not change', inject(function ($rootScope) {
+  it('should mute route change if widget did not change', inject(function ($rootScope) {
     var eventSpy = jasmine.createSpy('$routeChangeSuccess');
+    var eventSpyMuted = jasmine.createSpy('$routeChangeMuted');
     $route.current.locals = {$template: '<ng-widget>'};
 
     $rootScope.$on('$routeChangeSuccess', eventSpy);
+    $rootScope.$on('$routeChangeMuted', eventSpyMuted);
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();
     eventSpy.reset();
 
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).not.toHaveBeenCalled();
+    expect(eventSpyMuted).toHaveBeenCalled();
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
 
