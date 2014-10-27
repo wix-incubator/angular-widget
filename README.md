@@ -9,7 +9,7 @@ Slides: https://slides.com/shahartalmi/angular-widget/
 
 ## What it does
 
-One of the main problems people discover in angular when they try to write  a very big application with all sorts of components, is that you can't load code during run-time easily. When angular bootstraps your DOM, it creates an injector with the configuration that was defined at that moment and you cannot add services, directives, controllers, etc. easily after the injector was created. This library allows you to download js/css/html code into a running angular app and will create a new injector for that "widget". Since each widget has its own injector, each widget has a different instance for services that they use. They can configure them how ever they like without any effect on any other widget or on the main application that hosts the widgets. Regardless, all widgets share the same DOM, so a widget create modal dialogs or whatever it likes. Widgets are simply added to the DOM using the `ng-widget` directive. The directive download all required files and creates the widget. Widgets can get information from the hosting application using the `options` attribute of the directive and they can report to the hosting application using `widgetConfig.exportProperties` and `widgetConfig.reportError`.
+One of the main problems people discover in angular when they try to write a very big application with all sorts of components, is that you can't load code during run-time easily. When angular bootstraps your DOM, it creates an injector with the configuration that was defined at that moment and you cannot add services, directives, controllers, etc. easily after the injector was created. This library allows you to download js/css/html code into a running angular app and will create a new injector for that "widget". Since each widget has its own injector, each widget has a different instance for services that they use. They can configure them how ever they like without any effect on any other widget or on the main application that hosts the widgets. Regardless, all widgets share the same DOM, so a widget create modal dialogs or whatever it likes. Widgets are simply added to the DOM using the `ng-widget` directive. The directive download all required files and creates the widget. Widgets can get information from the hosting application using the `options` attribute of the directive and they can report to the hosting application using `widgetConfig.exportProperties` and `widgetConfig.reportError`.
 
 But that's just the start! Widgets can actually be full blown applications with their own router. (both angular-route and ui-router are supported) See the demo page for an example that uses angular-route to host three lazy loaded applications - one uses ui-router internally, one uses angular-route and the third displays some widget (widgets within widgets, whoa...)
 
@@ -89,14 +89,14 @@ You can actually set multiple manifest generators and they will be evaluated in 
 
 ## Service Usage (widget)
 
-In order to communicate with the hosting application, the widget uses the `widgteConfig` service. (the widget module always has a module dependency on `angularWidget`, if no such dependency exists, it will be added automatically during bootstrap)
+In order to communicate with the hosting application, the widget uses the `widgetConfig` service. (the widget module always has a module dependency on `angularWidget`, if no such dependency exists, it will be added automatically during bootstrap)
 
 ### Methods
 
 |Name|Param|Details|
 |---|---|---|
-|exportProperties|properties (obj)|Send information to the hosting application. The object sent in the param will extend previous calls, so you can send only the properties that has changed. The directive will emit a `exportPorprtiesUpdated` event. |
-|reportError|N/A|Report that there was some kind of error to the hosting application. The directive will emit a `widgetError` event. |
+|exportProperties|properties (obj)|Send information to the hosting application. The object sent in the param will extend previous calls, so you can send only the properties that have changed. The directive will emit a `exportPropertiesUpdated` event. |
+|reportError|N/A|Report some kind of error to the hosting application. The directive will emit a `widgetError` event. |
 |getOptions|N/A|Get the options object supplied by the object. The options will always have the same reference, so you can save it on the scope. A scope digest will be triggered automatically if the options change. |
 
 ## Sharing information between widgets
