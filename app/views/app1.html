@@ -1,4 +1,4 @@
-<div ng-init="widgets = [{id: 0, src: 'widget1'}]; options = {collapse: true}">
+<div ng-init="widgets = [{id: 0, src: 'widget1'}]; options = {collapse: true}" style="background-color: blue; overflow: hidden; padding: 15px">
   <button ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'widget1'})">add widget1...</button>
   <button ng-click="widgets.push({id: widgets[widgets.length-1].id+1, src: 'widget2'})">add widget2...</button>
   <button ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</button>

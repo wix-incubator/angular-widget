@@ -10,10 +10,12 @@
     <script src="bower_components/angular-route/angular-route.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
   <body ng-init="navigationCount = 0">
-    <a ng-repeat="app in ['app1', 'app2', 'app3']" ng-href="#/{{app}}/"
-      ng-click="$parent.navigationCount = navigationCount + 1"
-      style="padding: 5px">{{app}}</a>
-    <span>{{navigationCount}}<br/><br/>
+    <div style="background-color: gray">
+      <a ng-repeat="app in ['app1', 'app2', 'app3']" ng-href="#/{{app}}/"
+        ng-click="$parent.navigationCount = navigationCount + 1"
+        style="padding: 5px">{{app}}</a>
+      <span>{{navigationCount}}</span><br/><br/>
+    </div>
     <ng-view></ng-view>
 
     <!-- build:js({.tmp,app}) scripts/demo.js -->
