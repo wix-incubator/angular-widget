@@ -137,6 +137,39 @@ describe('Unit testing ngWidget directive', function () {
     expect(eventSpy2).not.toHaveBeenCalled();
   }));
 
+  it('should emit events that were declared as forwarded', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var eventSpy = jasmine.createSpy('$locationChangeStart');
+    var eventSpy2 = jasmine.createSpy('$locationChangeSuccess');
+
+    $rootScope.$on('$locationChangeStart', eventSpy);
+    $rootScope.$on('$locationChangeSuccess', eventSpy2);
+
+    widgetScope.$emit('$locationChangeStart', 1, 2, 3);
+    widgetScope.$emit('$locationChangeSuccess', 1, 2, 3);
+
+    expect(eventSpy).toHaveBeenCalledWith(jasmine.any(Object), 1, 2, 3);
+    expect(eventSpy2).not.toHaveBeenCalled();
+  }));
+
+  it('should not forward events that were broadcasted on widget scope', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var eventSpy = jasmine.createSpy('$locationChangeStart');
+
+    $rootScope.$on('$locationChangeStart', eventSpy);
+    widgetScope.$broadcast('$locationChangeStart', 1, 2, 3);
+
+    expect(eventSpy).not.toHaveBeenCalled();
+  }));
+
   it('should allow widget to prevent default', inject(function ($rootScope) {
     downloadWidgetSuccess();
     compileWidget();
@@ -150,6 +183,21 @@ describe('Unit testing ngWidget directive', function () {
 
     eventSpy.andCallFake(function (e) { e.preventDefault(); });
     expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
+  }));
+
+  it('should allow hosting app to prevent default', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var eventSpy = jasmine.createSpy('$locationChangeStart');
+
+    $rootScope.$on('$locationChangeStart', eventSpy);
+    expect(widgetScope.$emit('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(false);
+
+    eventSpy.andCallFake(function (e) { e.preventDefault(); });
+    expect(widgetScope.$emit('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
   }));
 
   it('should emit events', function () {

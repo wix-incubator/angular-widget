@@ -60,18 +60,26 @@ angular.module('angularWidgetInternal')
           });
         }
 
+        function forwardEvent(name, src, dst, emit) {
+          var fn = emit ? dst.$emit : dst.$broadcast;
+          src.$on(name, function (event) {
+            if (!emit || event.stopPropagation) {
+              var args = Array.prototype.slice.call(arguments);
+              args[0] = name;
+              if (fn.apply(dst, args).defaultPrevented) {
+                event.preventDefault();
+              }
+            }
+          });
+        }
+
         function handleNewInjector() {
           var widgetConfig = injector.get('widgetConfig');
           var widgetScope = injector.get('$rootScope');
 
           widgets.getEventsToForward().forEach(function (name) {
-            $rootScope.$on(name, function (event) {
-              var args = Array.prototype.slice.call(arguments);
-              args[0] = name;
-              if (widgetScope.$broadcast.apply(widgetScope, args).defaultPrevented) {
-                event.preventDefault();
-              }
-            });
+            forwardEvent(name, $rootScope, widgetScope, false);
+            forwardEvent(name, widgetScope, scope, true);
           });
 
           scope.$watch('options', function (options) {
