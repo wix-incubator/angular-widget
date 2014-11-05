@@ -1,5 +1,38 @@
 'use strict';
 
+describe('Unit testing angular widget only kickoff', function () {
+  var locationChangeStartSpy, locationChangeSuccessSpy;
+
+  beforeEach(function () {
+    module('angularWidgetOnly');
+    locationChangeStartSpy = jasmine.createSpy('locationChangeStartSpy');
+    locationChangeSuccessSpy = jasmine.createSpy('locationChangeSuccessSpy');
+    inject(function ($rootScope) {
+      $rootScope.$on('$locationChangeStart', locationChangeStartSpy);
+      $rootScope.$on('$locationChangeSuccess', locationChangeSuccessSpy);
+    });
+  });
+
+  it('should broadcast $locationChangeSuccess immediately', inject(function ($rootScope) {
+    $rootScope.$digest();
+    expect(locationChangeSuccessSpy).toHaveBeenCalledWith(jasmine.any(Object), 'http://server/', '');
+  }));
+
+  it('should broadcast $locationChangeStart immediately', inject(function ($rootScope) {
+    $rootScope.$digest();
+    expect(locationChangeStartSpy).toHaveBeenCalledWith(jasmine.any(Object), 'http://server/', '');
+  }));
+
+  it('should not broadcast $locationChangeSuccess if $locationChangeStart is prevented', inject(function ($rootScope) {
+    locationChangeStartSpy.andCallFake(function (ev) {
+      ev.preventDefault();
+    });
+    $rootScope.$digest();
+    expect(locationChangeStartSpy).toHaveBeenCalledWith(jasmine.any(Object), 'http://server/', '');
+    expect(locationChangeSuccessSpy).not.toHaveBeenCalled();
+  }));
+});
+
 describe('Unit testing routing hacks', function () {
   var $route, notifyWidgets;
 

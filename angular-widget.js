@@ -50,7 +50,10 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
 
 angular.module("angularWidgetOnly", []).run([ "$rootScope", "$location", function($rootScope, $location) {
     $rootScope.$evalAsync(function() {
-        $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
+        var ev = $rootScope.$broadcast("$locationChangeStart", $location.absUrl(), "");
+        if (!ev.defaultPrevented) {
+            $rootScope.$broadcast("$locationChangeSuccess", $location.absUrl(), "");
+        }
     });
 } ]);
 

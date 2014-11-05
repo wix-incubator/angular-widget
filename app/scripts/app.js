@@ -75,7 +75,10 @@ angular.module('angularWidgetOnly', [])
     //ourselves to kickoff ng-rounte and ui-router ($location usually does that
     //itself during instantiation)
     $rootScope.$evalAsync(function () {
-      $rootScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
+      var ev = $rootScope.$broadcast('$locationChangeStart', $location.absUrl(), '');
+      if (!ev.defaultPrevented) {
+        $rootScope.$broadcast('$locationChangeSuccess', $location.absUrl(), '');
+      }
     });
   });
 
