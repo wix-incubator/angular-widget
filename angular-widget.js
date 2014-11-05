@@ -41,7 +41,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
     widgetsProvider.addServiceToShare("$location", {
         url: 1,
         path: 1,
-        search: 2,
+        search: 1,
         hash: 1,
         $$parse: 1
     });

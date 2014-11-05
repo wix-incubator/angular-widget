@@ -58,7 +58,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
       //a digest loop in the main app when some widget sets the location.
       url: 1,
       path: 1,
-      search: 2,
+      search: 1,
       hash: 1,
       $$parse: 1
     });
