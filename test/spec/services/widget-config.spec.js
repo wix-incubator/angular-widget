@@ -82,6 +82,15 @@ describe('Unit testing widgetConfig service', function () {
         expect(widgetConfig.getOptions()).not.toBe(options);
       });
     });
+
+    it('should get options from provider', function () {
+      var options = {a: 1};
+      module(function (widgetConfigProvider) {
+        widgetConfigProvider.setOptions(options);
+        expect(widgetConfigProvider.getOptions()).toEqual(options);
+        expect(widgetConfigProvider.getOptions()).not.toBe(options);
+      });
+    });
   });
 
 });

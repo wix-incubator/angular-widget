@@ -18,6 +18,10 @@ angular.module('angularWidgetInternal')
       angular.copy(newOptions, options);
     };
 
+    this.getOptions = function () {
+      return options;
+    };
+
     function safeApply(fn) {
       if (parentInjectorScope.$root.$$phase) {
         fn();
