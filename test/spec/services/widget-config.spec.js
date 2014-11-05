@@ -90,6 +90,7 @@ describe('Unit testing widgetConfig service', function () {
         expect(widgetConfigProvider.getOptions()).toEqual(options);
         expect(widgetConfigProvider.getOptions()).not.toBe(options);
       });
+      inject(angular.noop);
     });
   });
 

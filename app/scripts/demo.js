@@ -7,10 +7,7 @@ angular.module('angularWidgetApp', ['ngRoute', 'angularWidget'])
   .config(function initializeRouteProvider($routeProvider) {
     ['app1', 'app2', 'app3'].forEach(function (applicationName) {
       $routeProvider.when('/' + applicationName + '/:eatall*?', {
-        template: '<ng-widget src="src" delay="0"></ng-widget>',
-        controller: function ($scope) {
-          $scope.src = applicationName;
-        },
+        template: '<ng-widget src="\'' + applicationName + '\'" delay="0"></ng-widget>',
         reloadOnSearch: false
       });
     });
