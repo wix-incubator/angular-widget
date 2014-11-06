@@ -12,7 +12,7 @@ angular.module('angularWidgetInternal')
         delay: '@'
       },
       link: function (scope, element) {
-        var changeCounter = 0, injector;
+        var changeCounter = 0, injector, unsubscribe;
 
         /* @ngInject */
         function widgetConfigSection($provide, widgetConfigProvider) {
@@ -62,7 +62,7 @@ angular.module('angularWidgetInternal')
 
         function forwardEvent(name, src, dst, emit) {
           var fn = emit ? dst.$emit : dst.$broadcast;
-          src.$on(name, function (event) {
+          return src.$on(name, function (event) {
             if (!emit || event.stopPropagation) {
               var args = Array.prototype.slice.call(arguments);
               args[0] = name;
@@ -76,17 +76,18 @@ angular.module('angularWidgetInternal')
         function handleNewInjector() {
           var widgetConfig = injector.get('widgetConfig');
           var widgetScope = injector.get('$rootScope');
+          unsubscribe = [];
 
           widgets.getEventsToForward().forEach(function (name) {
-            forwardEvent(name, $rootScope, widgetScope, false);
-            forwardEvent(name, widgetScope, scope, true);
+            unsubscribe.push(forwardEvent(name, $rootScope, widgetScope, false));
+            unsubscribe.push(forwardEvent(name, widgetScope, scope, true));
           });
 
-          scope.$watch('options', function (options) {
+          unsubscribe.push(scope.$watch('options', function (options) {
             widgetScope.$apply(function () {
               widgetConfig.setOptions(options);
             });
-          }, true);
+          }, true));
 
           var properties = widgetConfig.exportProperties();
           if (!properties.loading) {
@@ -98,6 +99,7 @@ angular.module('angularWidgetInternal')
                 scope.$emit('widgetLoaded');
               }
             });
+            unsubscribe.push(deregister);
           }
 
           widgets.registerWidget(injector);
@@ -138,6 +140,9 @@ angular.module('angularWidgetInternal')
 
         function unregisterInjector() {
           if (injector) {
+            unsubscribe.forEach(function (fn) {
+              fn();
+            });
             widgets.unregisterWidget(injector);
             injector = null;
           }
