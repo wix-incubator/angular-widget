@@ -30,6 +30,8 @@ angular.module('angularWidgetInternal')
       var done = false;
       headElement.appendChild(fileref);
       fileref.onerror = function () {
+        fileref.onerror = fileref.onload = fileref.onreadystatechange = null;
+
         //the $$phase test is required due to $interval mock, should be removed when $interval is fixed
         if ($rootScope.$$phase) {
           deferred.reject();
@@ -42,7 +44,7 @@ angular.module('angularWidgetInternal')
       fileref.onload = fileref.onreadystatechange = function () {
         if (!done && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
           done = true;
-          fileref.onload = fileref.onreadystatechange = null;
+          fileref.onerror = fileref.onload = fileref.onreadystatechange = null;
           requireCache.push(url);
 
           //the $$phase test is required due to $interval mock, should be removed when $interval is fixed

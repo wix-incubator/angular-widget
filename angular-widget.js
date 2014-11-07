@@ -180,6 +180,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                     });
                     widgets.unregisterWidget(injector);
                     injector = null;
+                    unsubscribe = [];
                 }
             }
             function updateWidgetSrc() {
@@ -224,6 +225,7 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
         var done = false;
         headElement.appendChild(fileref);
         fileref.onerror = function() {
+            fileref.onerror = fileref.onload = fileref.onreadystatechange = null;
             if ($rootScope.$$phase) {
                 deferred.reject();
             } else {
@@ -235,7 +237,7 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
         fileref.onload = fileref.onreadystatechange = function() {
             if (!done && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
                 done = true;
-                fileref.onload = fileref.onreadystatechange = null;
+                fileref.onerror = fileref.onload = fileref.onreadystatechange = null;
                 requireCache.push(url);
                 if ($rootScope.$$phase) {
                     deferred.resolve();

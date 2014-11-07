@@ -145,6 +145,7 @@ angular.module('angularWidgetInternal')
             });
             widgets.unregisterWidget(injector);
             injector = null;
+            unsubscribe = [];
           }
         }
 
