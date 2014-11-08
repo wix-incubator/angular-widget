@@ -12,6 +12,10 @@ angular.module('angularWidgetInternal')
 
     this.setParentInjectorScope = function (scope) {
       parentInjectorScope = scope;
+      var unsubscribe = parentInjectorScope.$on('$destroy', function () {
+        parentInjectorScope = null;
+        unsubscribe();
+      });
     };
 
     this.setOptions = function (newOptions) {

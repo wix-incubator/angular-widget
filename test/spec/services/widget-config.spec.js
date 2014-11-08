@@ -22,7 +22,8 @@ describe('Unit testing widgetConfig service', function () {
           $emit: function (name, arg) {
             log += '$emit(' + name + ':' + JSON.stringify(arg) + ')';
             return {};
-          }
+          },
+          $on: angular.noop
         });
       });
     });

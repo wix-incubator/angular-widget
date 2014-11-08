@@ -162,6 +162,7 @@ angular.module('angularWidgetInternal')
         scope.$on('$destroy', function () {
           changeCounter++;
           unregisterInjector();
+          element.html('');
         });
       }
     };

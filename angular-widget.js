@@ -195,6 +195,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             scope.$on("$destroy", function() {
                 changeCounter++;
                 unregisterInjector();
+                element.html("");
             });
         }
     };
@@ -281,6 +282,10 @@ angular.module("angularWidgetInternal").provider("widgetConfig", function() {
     var options = {};
     this.setParentInjectorScope = function(scope) {
         parentInjectorScope = scope;
+        var unsubscribe = parentInjectorScope.$on("$destroy", function() {
+            parentInjectorScope = null;
+            unsubscribe();
+        });
     };
     this.setOptions = function(newOptions) {
         angular.copy(newOptions, options);
@@ -402,7 +407,10 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
                     widgets = [];
                 }
                 del.forEach(function(injector) {
-                    injector.get("$rootScope").$destroy();
+                    var $rootScope = injector.get("$rootScope");
+                    $rootScope.$destroy();
+                    $rootScope.$$childHead = $rootScope.$$childTail = null;
+                    $rootScope.$$ChildScope = null;
                 });
             },
             registerWidget: function(injector) {

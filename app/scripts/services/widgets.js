@@ -90,7 +90,10 @@ angular.module('angularWidgetInternal')
             widgets = [];
           }
           del.forEach(function (injector) {
-            injector.get('$rootScope').$destroy();
+            var $rootScope = injector.get('$rootScope');
+            $rootScope.$destroy();
+            $rootScope.$$childHead = $rootScope.$$childTail = null;
+            $rootScope.$$ChildScope = null;
           });
         },
         registerWidget: function (injector) {
