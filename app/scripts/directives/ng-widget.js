@@ -66,9 +66,11 @@ angular.module('angularWidgetInternal')
             if (!emit || event.stopPropagation) {
               var args = Array.prototype.slice.call(arguments);
               args[0] = name;
-              if (fn.apply(dst, args).defaultPrevented) {
-                event.preventDefault();
-              }
+              dst.$apply(function () {
+                if (fn.apply(dst, args).defaultPrevented) {
+                  event.preventDefault();
+                }
+              });
             }
           });
         }

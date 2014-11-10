@@ -126,15 +126,18 @@ describe('Unit testing ngWidget directive', function () {
     var widgetScope = widgetInjector.get('$rootScope');
     var eventSpy = jasmine.createSpy('$locationChangeStart');
     var eventSpy2 = jasmine.createSpy('$locationChangeSuccess');
+    var watchSpy = jasmine.createSpy('watchSpy');
 
     widgetScope.$on('$locationChangeStart', eventSpy);
     widgetScope.$on('$locationChangeSuccess', eventSpy2);
+    widgetScope.$watch(watchSpy, angular.noop);
 
     $rootScope.$broadcast('$locationChangeStart', 1, 2, 3);
     $rootScope.$broadcast('$locationChangeSuccess', 1, 2, 3);
 
     expect(eventSpy).toHaveBeenCalledWith(jasmine.any(Object), 1, 2, 3);
     expect(eventSpy2).not.toHaveBeenCalled();
+    expect(watchSpy).toHaveBeenCalled();
   }));
 
   it('should emit events that were declared as forwarded', inject(function ($rootScope) {
@@ -145,15 +148,18 @@ describe('Unit testing ngWidget directive', function () {
     var widgetScope = widgetInjector.get('$rootScope');
     var eventSpy = jasmine.createSpy('$locationChangeStart');
     var eventSpy2 = jasmine.createSpy('$locationChangeSuccess');
+    var watchSpy = jasmine.createSpy('watchSpy');
 
     $rootScope.$on('$locationChangeStart', eventSpy);
     $rootScope.$on('$locationChangeSuccess', eventSpy2);
+    $rootScope.$watch(watchSpy, angular.noop);
 
     widgetScope.$emit('$locationChangeStart', 1, 2, 3);
     widgetScope.$emit('$locationChangeSuccess', 1, 2, 3);
 
     expect(eventSpy).toHaveBeenCalledWith(jasmine.any(Object), 1, 2, 3);
     expect(eventSpy2).not.toHaveBeenCalled();
+    expect(watchSpy).toHaveBeenCalled();
   }));
 
   it('should not forward events that were broadcasted on widget scope', inject(function ($rootScope) {
