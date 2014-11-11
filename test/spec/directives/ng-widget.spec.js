@@ -176,6 +176,20 @@ describe('Unit testing ngWidget directive', function () {
     expect(eventSpy).not.toHaveBeenCalled();
   }));
 
+  it('should not forward events that were emitted on root scope', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var eventSpy = jasmine.createSpy('$locationChangeStart');
+
+    widgetScope.$on('$locationChangeStart', eventSpy);
+    $rootScope.$emit('$locationChangeStart', 1, 2, 3);
+
+    expect(eventSpy).not.toHaveBeenCalled();
+  }));
+
   it('should allow widget to prevent default', inject(function ($rootScope) {
     downloadWidgetSuccess();
     compileWidget();

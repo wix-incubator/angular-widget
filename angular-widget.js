@@ -113,7 +113,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             function forwardEvent(name, src, dst, emit) {
                 var fn = emit ? dst.$emit : dst.$broadcast;
                 return src.$on(name, function(event) {
-                    if (!emit || event.stopPropagation) {
+                    if (!emit && !event.stopPropagation || emit && event.stopPropagation) {
                         var args = Array.prototype.slice.call(arguments);
                         args[0] = name;
                         dst.$apply(function() {
