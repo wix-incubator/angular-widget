@@ -2,18 +2,20 @@
 
 angular.module('angularWidgetInternal')
   .provider('widgetConfig', function () {
-    var parentInjectorScope = {
+    var defaultParentInjectorScope = {
       $root: {},
       $apply: function (fn) { fn(); },
       $emit: angular.noop
     };
+
+    var parentInjectorScope = defaultParentInjectorScope;
 
     var options = {};
 
     this.setParentInjectorScope = function (scope) {
       parentInjectorScope = scope;
       var unsubscribe = parentInjectorScope.$on('$destroy', function () {
-        parentInjectorScope = null;
+        parentInjectorScope = defaultParentInjectorScope;
         unsubscribe();
       });
     };
