@@ -70,7 +70,7 @@ angular.module('angularWidgetInternal')
           return manifestGenerators.reduce(function (prev, generator) {
             var result = generator.apply(this, args);
             if (result && prev) {
-              //take the manifest with our priority.
+              //take the manifest with higher priority.
               //if same priority, last generator wins.
               return prev.priority > result.priority ? prev : result;
             } else {
