@@ -8,6 +8,12 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
     }
     $provide.decorator("$rootScope", [ "$delegate", "$injector", function($delegate, $injector) {
         var next, last, originalBroadcast = $delegate.$broadcast;
+        var suspendListener = false;
+        function suspendedNotify(widgets, $location) {
+            suspendListener = true;
+            widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
+            suspendListener = false;
+        }
         $delegate.$broadcast = function(name) {
             var shouldMute = false;
             if (name === "$routeChangeSuccess") {
@@ -15,7 +21,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
                     last = next;
                     next = $route.current;
                     if (next && last && next.$$route === last.$$route && next.locals && next.locals.$template && next.locals.$template.indexOf("<ng-widget") !== -1) {
-                        widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
+                        suspendedNotify(widgets, $location);
                         shouldMute = true;
                     }
                 } ]);
@@ -25,13 +31,10 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
             }
             return originalBroadcast.apply(this, arguments);
         };
-        var suspendListener = false;
         $delegate.$on("$routeUpdate", function() {
             if (!suspendListener) {
                 $injector.invoke([ "widgets", "$location", function(widgets, $location) {
-                    suspendListener = true;
-                    widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
-                    suspendListener = false;
+                    suspendedNotify(widgets, $location);
                 } ]);
             }
         });

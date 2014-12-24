@@ -12,6 +12,16 @@ angular.module('angularWidget', ['angularWidgetInternal'])
     $provide.decorator('$rootScope', function ($delegate, $injector) {
       var next, last, originalBroadcast = $delegate.$broadcast;
 
+      //sending $locationChangeSuccess will cause another $routeUpdate
+      //so we need this ugly flag to prevent call stack overflow
+      var suspendListener = false;
+
+      function suspendedNotify(widgets, $location) {
+        suspendListener = true;
+        widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
+        suspendListener = false;
+      }
+
       $delegate.$broadcast = function (name) {
         var shouldMute = false;
         if (name === '$routeChangeSuccess') {
@@ -21,7 +31,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
             if (next && last && next.$$route === last.$$route &&
                 next.locals && next.locals.$template &&
                 next.locals.$template.indexOf('<ng-widget') !== -1) {
-              widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
+              suspendedNotify(widgets, $location);
               shouldMute = true;
             }
           });
@@ -32,15 +42,10 @@ angular.module('angularWidget', ['angularWidgetInternal'])
         return originalBroadcast.apply(this, arguments);
       };
 
-      //sending $locationChangeSuccess will cause another $routeUpdate
-      //so we need this ugly flag to prevent call stack overflow
-      var suspendListener = false;
       $delegate.$on('$routeUpdate', function () {
         if (!suspendListener) {
           $injector.invoke(/* @ngInject */function (widgets, $location) {
-            suspendListener = true;
-            widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
-            suspendListener = false;
+            suspendedNotify(widgets, $location);
           });
         }
       });
