@@ -7,6 +7,8 @@ Demo: http://shahata.github.io/angular-widget/
 
 Slides: https://slides.com/shahartalmi/angular-widget/
 
+Talk (English - Bad quality):  http://youtu.be/klqQtiLrpyM
+
 Talk (Hebrew): http://youtu.be/Wgn2Vid8zCA
 
 ## What it does
