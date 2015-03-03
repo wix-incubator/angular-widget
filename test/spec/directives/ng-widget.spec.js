@@ -64,10 +64,8 @@ describe('Unit testing ngWidget directive', function () {
   }
 
   function flushDownload() {
-    inject(function ($httpBackend, $timeout) {
+    inject(function ($httpBackend) {
       $httpBackend.flush();
-      $timeout.flush(1000);
-
       widgetInjector = element.find('div').injector();
       widgetConfig = widgetInjector && widgetInjector.get('widgetConfig');
     });
@@ -88,7 +86,7 @@ describe('Unit testing ngWidget directive', function () {
 
   it('should respect delay attribute', inject(function ($timeout) {
     downloadWidgetSuccess();
-    compileWidget(undefined, 2000);
+    compileWidget(undefined, 1000);
 
     flushDownload();
     expect(widgetInjector).toBeUndefined();
@@ -100,7 +98,7 @@ describe('Unit testing ngWidget directive', function () {
 
   it('should respect delay attribute for errors too', inject(function ($httpBackend, $timeout) {
     $httpBackend.expectGET('views/dummy-widget.html').respond(500, 'wtf');
-    compileWidget(undefined, 2000);
+    compileWidget(undefined, 1000);
 
     flushDownload();
     expect(spies.widgetError).not.toHaveBeenCalled();
@@ -330,21 +328,20 @@ describe('Unit testing ngWidget directive', function () {
     expect(spies.widgetError).toHaveBeenCalled();
   }));
 
-  it('should not handle error if src was already changed', inject(function ($rootScope, $timeout, $q, $httpBackend) {
+  it('should not handle error if src was already changed', inject(function ($rootScope, $timeout, $q) {
     downloadWidgetSuccess('stam');
     compileWidget();
 
     $rootScope.widget = 'stam';
+    $rootScope.$digest();
     tagAppender.andReturn($q.reject());
-    $httpBackend.flush();
-    $timeout.flush(500);
 
     $rootScope.widget = 'dummy';
     downloadWidgetSuccess();
     flushDownload();
 
     expect(spies.widgetError).not.toHaveBeenCalled();
-    expect(spies.widgetLoaded).toHaveBeenCalled();
+    expect(spies.widgetLoaded).toHaveBeenCalledWith(jasmine.any(Object), 'dummy');
   }));
 
   it('should not handle success if src was already changed', inject(function ($rootScope, $timeout, $q, $httpBackend) {

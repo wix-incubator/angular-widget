@@ -27,15 +27,17 @@ angular.module('angularWidgetInternal')
           widgetConfigProvider.setOptions(scope.options);
         }
 
+        function whenTimeout(result, delay) {
+          return delay ? $timeout(function () {
+            return result;
+          }, delay) : result;
+        }
+
         function delayedPromise(promise, delay) {
           return $q.when(promise).then(function (result) {
-            return $timeout(function () {
-              return result;
-            }, delay === undefined ? 1000 : delay);
+            return whenTimeout(result, delay);
           }, function (result) {
-            return $timeout(function () {
-              return $q.reject(result);
-            }, delay === undefined ? 1000 : delay);
+            return whenTimeout($q.reject(result), delay);
           });
         }
 
@@ -93,12 +95,12 @@ angular.module('angularWidgetInternal')
 
           var properties = widgetConfig.exportProperties();
           if (!properties.loading) {
-            scope.$emit('widgetLoaded');
+            scope.$emit('widgetLoaded', scope.src);
           } else {
             var deregister = scope.$on('exportPropertiesUpdated', function (event, properties) {
               if (!properties.loading) {
                 deregister();
-                scope.$emit('widgetLoaded');
+                scope.$emit('widgetLoaded', scope.src);
               }
             });
             unsubscribe.push(deregister);
