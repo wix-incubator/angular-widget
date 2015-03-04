@@ -7,6 +7,6 @@
     "wix-gruntfile": "~0.1.2"
   },
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=0.12.0"
   }
 }
