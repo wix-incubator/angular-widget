@@ -111,35 +111,35 @@ angular.module('angularWidgetInternal')
 
         function bootstrapWidget(src, delay) {
           var thisChangeId = ++changeCounter;
-          var manifest = widgets.getWidgetManifest(src);
+          $q.when(widgets.getWidgetManifest(src)).then(function (manifest) {
+            delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay)
+              .then(function (response) {
+                if (thisChangeId !== changeCounter) {
+                  return;
+                }
+                try {
+                  var widgetElement = angular.element(response);
+                  var modules = [
+                    'angularWidgetOnly',
+                    'angularWidget',
+                    widgetConfigSection,
+                    manifest.module
+                  ].concat(manifest.config || []);
 
-          delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay)
-            .then(function (response) {
-              if (thisChangeId !== changeCounter) {
-                return;
-              }
-              try {
-                var widgetElement = angular.element(response);
-                var modules = [
-                  'angularWidgetOnly',
-                  'angularWidget',
-                  widgetConfigSection,
-                  manifest.module
-                ].concat(manifest.config || []);
-
-                scope.$emit('widgetLoading');
-                injector = angular.bootstrap(widgetElement, modules);
-                handleNewInjector();
-                element.append(widgetElement);
-              } catch (e) {
-                $log.error(e);
-                scope.$emit('widgetError');
-              }
-            }, function () {
-              if (thisChangeId === changeCounter) {
-                scope.$emit('widgetError');
-              }
-            });
+                  scope.$emit('widgetLoading');
+                  injector = angular.bootstrap(widgetElement, modules);
+                  handleNewInjector();
+                  element.append(widgetElement);
+                } catch (e) {
+                  $log.error(e);
+                  scope.$emit('widgetError');
+                }
+              }, function () {
+                if (thisChangeId === changeCounter) {
+                  scope.$emit('widgetError');
+                }
+              });
+          });
         }
 
         function unregisterInjector() {

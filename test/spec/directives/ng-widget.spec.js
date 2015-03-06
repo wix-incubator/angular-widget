@@ -18,8 +18,11 @@ describe('Unit testing ngWidget directive', function () {
     module({
       tagAppender: tagAppender = jasmine.createSpy('tagAppender'),
     }, function (widgetsProvider) {
-      widgetsProvider.setManifestGenerator(function () {
-        return function (name) {
+      widgetsProvider.setManifestGenerator(function ($q) {
+        return function manifestGenerator(name) {
+          if (name === 'promise') {
+            return $q.when(manifestGenerator('dummy'));
+          }
           return {
             module: name + 'Widget',
             html: 'views/' + name + '-widget.html',
@@ -54,7 +57,7 @@ describe('Unit testing ngWidget directive', function () {
       scope.widget = scope.widget || 'dummy';
       element = $compile('<ng-widget src="widget" options="options"' +
                          (delay === undefined ? '' : ' delay="' + delay + '"') +
-                         '></ng-widget>')(scope || $rootScope);
+                         '></ng-widget>')(scope);
 
       spies = jasmine.createSpyObj('spies', ['exportPropertiesUpdated', 'widgetLoaded', 'widgetError']);
       $rootScope.$on('exportPropertiesUpdated', spies.exportPropertiesUpdated);
@@ -83,6 +86,14 @@ describe('Unit testing ngWidget directive', function () {
 
     expect(widgetConfig.getOptions()).toEqual({});
   });
+
+  it('should allow manifest generator to return a promise', inject(function ($rootScope) {
+    $rootScope.widget = 'promise';
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+    expect(element.find('div').html()).toBe('123');
+  }));
 
   it('should respect delay attribute', inject(function ($timeout) {
     downloadWidgetSuccess();
