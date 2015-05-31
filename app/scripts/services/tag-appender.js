@@ -8,6 +8,10 @@ angular.module('angularWidgetInternal')
     var requireCache = [];
     var styleSheets = $document[0].styleSheets;
 
+    function noprotocol(url) {
+      return url.replace(/^.*:\/\//, '//');
+    }
+
     return function (url, filetype) {
       var deferred = $q.defer();
       if (requireCache.indexOf(url) !== -1) {
@@ -61,7 +65,7 @@ angular.module('angularWidgetInternal')
         var attempts = 20;
         var promise = $interval(function checkStylesheetAttempt() {
           for (var i = 0; i < styleSheets.length; i++) {
-            if (styleSheets[i].href === url) {
+            if (noprotocol(styleSheets[i].href) === noprotocol(url)) {
               $interval.cancel(promise);
               fileref.onload();
               return;

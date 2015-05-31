@@ -45,6 +45,27 @@ describe('Unit testing tagAppender service', function () {
     });
   });
 
+  it('should poll stylesheets in safari 5 ignoring protocol', function () {
+    module(function ($provide) {
+      $provide.value('navigator', {userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2'});
+      $provide.value('$document', [{styleSheets: []}]);
+    });
+    inject(function (tagAppender, $document, $interval, $rootScope) {
+      var success = jasmine.createSpy('success');
+      tagAppender('//static.wix.com/dummy.css', 'css').then(success);
+
+      $document[0].styleSheets.push({href: 'http://static.wix.com/not-dummy.css'});
+      $interval.flush(50);
+      $rootScope.$digest();
+      expect(success).not.toHaveBeenCalled();
+
+      $document[0].styleSheets.push({href: 'http://static.wix.com/dummy.css'});
+      $interval.flush(50);
+      $rootScope.$digest();
+      expect(success).toHaveBeenCalled();
+    });
+  });
+
   it('should fail stylesheets polling after timeout', function () {
     module(function ($provide) {
       $provide.value('navigator', {userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2'});
