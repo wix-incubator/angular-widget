@@ -55,6 +55,7 @@ describe('Unit testing tagAppender service', function () {
       tagAppender('//static.wix.com/dummy.css', 'css').then(success);
 
       $document[0].styleSheets.push({href: 'http://static.wix.com/not-dummy.css'});
+      $document[0].styleSheets.push({href: null});
       $interval.flush(50);
       $rootScope.$digest();
       expect(success).not.toHaveBeenCalled();

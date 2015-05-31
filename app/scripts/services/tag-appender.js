@@ -65,7 +65,7 @@ angular.module('angularWidgetInternal')
         var attempts = 20;
         var promise = $interval(function checkStylesheetAttempt() {
           for (var i = 0; i < styleSheets.length; i++) {
-            if (noprotocol(styleSheets[i].href.toString()) === noprotocol(url)) {
+            if (noprotocol(styleSheets[i].href + '') === noprotocol(url)) {
               $interval.cancel(promise);
               fileref.onload();
               return;
