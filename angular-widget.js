@@ -157,26 +157,27 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             }
             function bootstrapWidget(src, delay) {
                 var thisChangeId = ++changeCounter;
-                var manifest = widgets.getWidgetManifest(src);
-                delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay).then(function(response) {
-                    if (thisChangeId !== changeCounter) {
-                        return;
-                    }
-                    try {
-                        var widgetElement = angular.element(response);
-                        var modules = [ "angularWidgetOnly", "angularWidget", widgetConfigSection, manifest.module ].concat(manifest.config || []);
-                        scope.$emit("widgetLoading");
-                        injector = angular.bootstrap(widgetElement, modules);
-                        handleNewInjector();
-                        element.append(widgetElement);
-                    } catch (e) {
-                        $log.error(e);
-                        scope.$emit("widgetError");
-                    }
-                }, function() {
-                    if (thisChangeId === changeCounter) {
-                        scope.$emit("widgetError");
-                    }
+                $q.when(widgets.getWidgetManifest(src)).then(function(manifest) {
+                    delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay).then(function(response) {
+                        if (thisChangeId !== changeCounter) {
+                            return;
+                        }
+                        try {
+                            var widgetElement = angular.element(response);
+                            var modules = [ "angularWidgetOnly", "angularWidget", widgetConfigSection, manifest.module ].concat(manifest.config || []);
+                            scope.$emit("widgetLoading");
+                            injector = angular.bootstrap(widgetElement, modules);
+                            handleNewInjector();
+                            element.append(widgetElement);
+                        } catch (e) {
+                            $log.error(e);
+                            scope.$emit("widgetError");
+                        }
+                    }, function() {
+                        if (thisChangeId === changeCounter) {
+                            scope.$emit("widgetError");
+                        }
+                    });
                 });
             }
             function unregisterInjector() {
@@ -212,6 +213,9 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
 angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", function($q, $rootScope, headElement, $interval, navigator, $document) {
     var requireCache = [];
     var styleSheets = $document[0].styleSheets;
+    function noprotocol(url) {
+        return url.replace(/^.*:\/\//, "//");
+    }
     return function(url, filetype) {
         var deferred = $q.defer();
         if (requireCache.indexOf(url) !== -1) {
@@ -259,7 +263,7 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
             var attempts = 20;
             var promise = $interval(function checkStylesheetAttempt() {
                 for (var i = 0; i < styleSheets.length; i++) {
-                    if (styleSheets[i].href === url) {
+                    if (noprotocol(styleSheets[i].href) === noprotocol(url)) {
                         $interval.cancel(promise);
                         fileref.onload();
                         return;
@@ -438,3 +442,4 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
         };
     } ];
 });
+//# sourceMappingURL=angular-widget.js.map
