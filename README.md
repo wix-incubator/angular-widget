@@ -7,7 +7,7 @@ Demo: http://shahata.github.io/angular-widget/
 
 Slides: https://slides.com/shahartalmi/angular-widget/
 
-Talk (English - Bad quality):  https://www.dropbox.com/s/uis6xy7dyihsm2c/angular-widget.mp4?dl=0
+Talk (English - Bad quality): https://youtu.be/D8fOHIwz8mY
 
 Talk (Hebrew): http://youtu.be/Wgn2Vid8zCA
 
