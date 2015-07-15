@@ -14,6 +14,10 @@ angular.module('angularWidgetInternal')
 
     return function (url, filetype) {
       var deferred = $q.defer();
+      if (filetype === 'js' && window.requirejs) {
+        window.requirejs([url], deferred.resolve);
+        return deferred.promise;
+      }
       if (requireCache.indexOf(url) !== -1) {
         deferred.resolve();
         return deferred.promise;
