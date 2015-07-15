@@ -89,6 +89,8 @@ angular.module('myApp').config(function (widgetsProvider) {
 
 You must set the manifest generator function in order for the directive to work. This is how we can know for a specific plugin, what files should be loaded and with which module name to create the injector. Above you can see an example for a manifest generator, but you can do whatever you like. You can put both relative and absolute URL's, of course.
 
+*Note:* In case [requirejs](http://requirejs.org/) is available in the global scope, it will be used to load the javascript files. So if your widget needs more than one js file, you can include [requirejs](http://requirejs.org/) and use AMD to load them.
+
 You can actually set multiple manifest generators and they will be evaluated in the order that they were defined. So a generator is allowed to return `undefined` in case it simply wants a different generator to handle it. The way the generators responses are handled is that the last generator that didn't return `undefined` will be used, unless a different generator returned a result with higher `priority`.
 
 ## Service Usage (widget)
@@ -125,7 +127,7 @@ BTW, one event that is shared by default is `$locationChangeStart`. This is in o
 
 ## How to use in the real world
 
-This framework is best used by having a separate project for each widget. During development, the developer sees only his own widget. All widgets should be built in a consistent manner, usually with one concatenated minified .js and .css files. 
+This framework is best used by having a separate project for each widget. During development, the developer sees only his own widget. All widgets should be built in a consistent manner, usually with one concatenated minified .js and .css files.
 
 ## License
 
