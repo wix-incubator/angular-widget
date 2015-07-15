@@ -5,7 +5,7 @@ module.exports = function (grunt) {
   var unitTestFiles = [];
   require('./karma.conf.js')({set: function (karmaConf) {
     unitTestFiles = karmaConf.files.filter(function (value) {
-      return value.indexOf('bower_component') !== -1;
+      return !value.indexOf || value.indexOf('bower_component') !== -1;
     });
   }});
   require('wix-gruntfile')(grunt, {
