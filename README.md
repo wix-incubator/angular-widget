@@ -9,7 +9,7 @@ Slides: https://slides.com/shahartalmi/angular-widget/
 
 Talk (English - Bad quality): https://youtu.be/D8fOHIwz8mY
 
-Talk (Hebrew): http://youtu.be/Wgn2Vid8zCA
+Talk (Hebrew): http://youtu.be/Wgn2Vid8zCA 
 
 ## What it does
 
