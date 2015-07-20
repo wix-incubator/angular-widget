@@ -27,6 +27,7 @@
     "es5-shim": "~2.1.0",
     "angular-route": ">= 1.2.0",
     "angular-ui-router": "~0.2.11",
-    "angular-widget": "~0.1.30"
+    "angular-widget": "~0.1.30",
+    "requirejs": "~2.1.19"
   }
 }

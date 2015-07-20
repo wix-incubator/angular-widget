@@ -10,6 +10,49 @@ describe('Unit testing tagAppender service', function () {
     });
   });
 
+  describe('Loading with requirejs when available and headElement is head', function () {
+    beforeEach(function () {
+      //Restoring the head element makes requirejs come into action
+      module({
+        headElement: window.document.getElementsByTagName('head')[0]
+      });
+    });
+
+    it('should load the javascript files',  inject (function (tagAppender, $window) {
+      var done = false;
+      tagAppender('base/test/mock/mock-lazyloaded-file.js', 'js').then(function () {
+        expect($window.lazyLoadingWorking).toBeTruthy();
+        done = true;
+      });
+      waitsFor(function() {
+        return done;
+      });
+    }));
+
+    it('should fail when file doesn\'t exist', inject (function (tagAppender) {
+      var done = false;
+      tagAppender('base/test/mock/non-existing-file.js', 'js').catch(function () {
+        done = true;
+      });
+      waitsFor(function() {
+        return done;
+      });
+    }));
+
+    it('should not fail when same file loads two times', inject (function (tagAppender, $window) {
+      var done = false;
+      tagAppender('base/test/mock/mock-lazyloaded-file.js', 'js').then(function () {
+        tagAppender('base/test/mock/mock-lazyloaded-file.js', 'js').then(function () {
+          expect($window.lazyLoadingWorking).toBeTruthy();
+          done= true;
+        });
+      });
+      waitsFor(function() {
+        return done;
+      });
+    }));
+  });
+
   it('should append script tag when js file is added', inject(function (tagAppender) {
     tagAppender('dummy.js', 'js');
     expect(headElement.appendChild.calls.length).toBe(1);
