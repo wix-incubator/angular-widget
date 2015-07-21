@@ -33,8 +33,10 @@ module.exports = function (config) {
       '{app,.tmp}/*.js',
       '{app,.tmp}/scripts/*.js',
       '{app,.tmp}/scripts/*/**/*.js',
+      {pattern:'{,.tmp}/test/mock/mock-lazyloaded-file.js',included:false},
       '{,.tmp/}test/**/*.js',
-      '{app,.tmp}/views/**/*.html'
+      '{app,.tmp}/views/**/*.html',
+      'app/bower_components/requirejs/require.js'
     ],
 
     // list of files / patterns to exclude

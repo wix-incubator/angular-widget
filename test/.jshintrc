@@ -47,6 +47,7 @@
     "using": false,
     "pause": false,
     "resume": false,
-    "sleep": false
+    "sleep": false,
+    "window": false
   }
 }
