@@ -210,7 +210,9 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
 
 "use strict";
 
-angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", function($q, $rootScope, headElement, $interval, navigator, $document) {
+angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).factory("requirejs", function() {
+    return window.requirejs;
+}).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", "requirejs", function($q, $rootScope, headElement, $interval, navigator, $document, requirejs) {
     var requireCache = [];
     var styleSheets = $document[0].styleSheets;
     function noprotocol(url) {
@@ -218,6 +220,16 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
     }
     return function(url, filetype) {
         var deferred = $q.defer();
+        if (requirejs && filetype === "js") {
+            requirejs([ url ], function(module) {
+                deferred.resolve(module);
+                $rootScope.$digest();
+            }, function(err) {
+                deferred.reject(err);
+                $rootScope.$digest();
+            });
+            return deferred.promise;
+        }
         if (requireCache.indexOf(url) !== -1) {
             deferred.resolve();
             return deferred.promise;
@@ -442,4 +454,3 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
         };
     } ];
 });
-//# sourceMappingURL=angular-widget.js.map
