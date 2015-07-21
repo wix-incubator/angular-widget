@@ -15,11 +15,11 @@ angular.module('angularWidgetInternal')
     return function (url, filetype) {
       var deferred = $q.defer();
       if (filetype === 'js' && window.requirejs && headElement === document.getElementsByTagName('head')[0]) {
-        window.requirejs([url], function () {
-          deferred.resolve();
+        window.requirejs([url], function (module) {
+          deferred.resolve(module);
           $rootScope.$digest();
-        }, function () {
-          deferred.reject();
+        }, function (err) {
+          deferred.reject(err);
           $rootScope.$digest();
         });
         return deferred.promise;
