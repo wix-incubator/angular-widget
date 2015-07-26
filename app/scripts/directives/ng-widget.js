@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularWidgetInternal')
-  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, tagAppender, widgets, $rootScope, $log) {
+  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, fileLoader, widgets, $rootScope, $log) {
     return {
       restrict: 'E',
       priority: 999,
@@ -53,11 +53,10 @@ angular.module('angularWidgetInternal')
 
           }
 
-          var promises = filetags.map(function (filename) {
-            return tagAppender(filename, filename.split('.').reverse()[0]);
-          });
-          promises.unshift($http.get(html, {cache: $templateCache}));
-          return $q.all(promises).then(function (result) {
+          return $q.all([
+              $http.get(html, {cache: $templateCache}),
+              fileLoader.loadFiles(filetags)
+            ]).then(function (result) {
             return result[0].data;
           });
         }

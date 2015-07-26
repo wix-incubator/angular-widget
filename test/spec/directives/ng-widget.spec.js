@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Unit testing ngWidget directive', function () {
-  var tagAppender, widgetInjector, widgetConfig, widgetIsLoading, widgets, spies, element;
+  var widgetInjector, widgetConfig, widgetIsLoading, widgets, spies, element;
 
   beforeEach(function () {
     widgetIsLoading = false;
@@ -16,7 +16,9 @@ describe('Unit testing ngWidget directive', function () {
     module('angularWidgetInternal');
 
     module({
-      tagAppender: tagAppender = jasmine.createSpy('tagAppender'),
+      fileLoader: {
+        loadFiles: jasmine.createSpy()
+      }
     }, function (widgetsProvider) {
       widgetsProvider.setManifestGenerator(function ($q) {
         return function manifestGenerator(name) {
@@ -40,10 +42,10 @@ describe('Unit testing ngWidget directive', function () {
   });
 
   function downloadWidgetSuccess(name) {
-    inject(function ($q, $httpBackend) {
+    inject(function ($q, $httpBackend, fileLoader) {
       $httpBackend.expectGET('views/' + (name || 'dummy') + '-widget.html')
         .respond('<div ng-bind="\'123\'"></div>');
-      tagAppender.andReturn($q.when());
+      fileLoader.loadFiles.andReturn($q.when());
     });
   }
 
@@ -289,27 +291,26 @@ describe('Unit testing ngWidget directive', function () {
     flushDownload();
   }));
 
-  it('should append the correct tags', inject(function ($rootScope) {
+  it('should load the correct files', inject(function ($rootScope, fileLoader) {
     downloadWidgetSuccess();
     compileWidget();
 
     $rootScope.$digest();
 
-    expect(tagAppender).toHaveBeenCalledWith('scripts/dummy-widget.js', 'js');
-    expect(tagAppender).toHaveBeenCalledWith('styles/dummy-widget.css', 'css');
-    expect(tagAppender.calls.length).toBe(2);
+    expect(fileLoader.loadFiles).toHaveBeenCalledWith(['scripts/dummy-widget.js', 'styles/dummy-widget.css']);
+    expect(fileLoader.loadFiles.calls.length).toBe(1);
   }));
 
-  it('should not append the tags if module exists', function () {
+  it('should not load the files if module exists', inject(function (fileLoader) {
     angular.module('dummyWidget').requires.push('angularWidget');
     downloadWidgetSuccess();
     compileWidget();
 
     flushDownload();
 
-    expect(tagAppender).not.toHaveBeenCalled();
+    expect(fileLoader.loadFiles).not.toHaveBeenCalled();
     expect(element.find('div').html()).toBe('123');
-  });
+  }));
 
   it('should report error if html fails to load', inject(function ($httpBackend) {
     $httpBackend.expectGET('views/dummy-widget.html').respond(500, 'wtf');
@@ -329,23 +330,23 @@ describe('Unit testing ngWidget directive', function () {
     expect(spies.widgetError).toHaveBeenCalled();
   }));
 
-  it('should report error if tag appender fails to load', inject(function ($q) {
+  it('should report error if tag fileLoader fails to load', inject(function ($q, fileLoader) {
     downloadWidgetSuccess();
     compileWidget();
 
-    tagAppender.andReturn($q.reject());
+    fileLoader.loadFiles.andReturn($q.reject());
     flushDownload();
 
     expect(spies.widgetError).toHaveBeenCalled();
   }));
 
-  it('should not handle error if src was already changed', inject(function ($rootScope, $timeout, $q) {
+  it('should not handle error if src was already changed', inject(function ($rootScope, $timeout, $q, fileLoader) {
     downloadWidgetSuccess('stam');
     compileWidget();
 
     $rootScope.widget = 'stam';
     $rootScope.$digest();
-    tagAppender.andReturn($q.reject());
+    fileLoader.loadFiles.andReturn($q.reject());
 
     $rootScope.widget = 'dummy';
     downloadWidgetSuccess();
@@ -355,7 +356,7 @@ describe('Unit testing ngWidget directive', function () {
     expect(spies.widgetLoaded).toHaveBeenCalledWith(jasmine.any(Object), 'dummy');
   }));
 
-  it('should not handle success if src was already changed', inject(function ($rootScope, $timeout, $q, $httpBackend) {
+  it('should not handle success if src was already changed', inject(function ($rootScope, $timeout, $q, $httpBackend, fileLoader) {
     downloadWidgetSuccess('stam');
     compileWidget();
 
@@ -365,7 +366,7 @@ describe('Unit testing ngWidget directive', function () {
 
     $rootScope.widget = 'dummy';
     downloadWidgetSuccess();
-    tagAppender.andReturn($q.reject());
+    fileLoader.loadFiles.andReturn($q.reject());
     flushDownload();
 
     expect(spies.widgetError).toHaveBeenCalled();
@@ -406,13 +407,13 @@ describe('Unit testing ngWidget directive', function () {
     expect(widgets.unregisterWidget).toHaveBeenCalledWith(widgetInjector);
   }));
 
-  it('should not append the tags if in module exists', inject(function ($httpBackend, $rootScope, $compile) {
+  it('should not load the files if in module exists', inject(function ($httpBackend, $rootScope, $compile, fileLoader) {
     angular.module('dummyWidget').requires.push('angularWidget');
     $httpBackend.expectGET('views/dummy-widget.html').respond('<div ng-bind="\'123\'"></div>');
     element = $compile('<ng-widget src="\'dummy\'" options="options"></ng-widget>')($rootScope);
     flushDownload();
 
-    expect(tagAppender).not.toHaveBeenCalled();
+    expect(fileLoader.loadFiles).not.toHaveBeenCalled();
     expect(element.find('div').html()).toBe('123');
   }));
 
