@@ -62,7 +62,7 @@ angular.module("angularWidgetOnly", []).run([ "$rootScope", "$location", functio
 
 "use strict";
 
-angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "tagAppender", "widgets", "$rootScope", "$log", function($http, $templateCache, $q, $timeout, tagAppender, widgets, $rootScope, $log) {
+angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "fileLoader", "widgets", "$rootScope", "$log", function($http, $templateCache, $q, $timeout, fileLoader, widgets, $rootScope, $log) {
     return {
         restrict: "E",
         priority: 999,
@@ -104,13 +104,9 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                         });
                     }
                 } catch (e) {}
-                var promises = filetags.map(function(filename) {
-                    return tagAppender(filename, filename.split(".").reverse()[0]);
-                });
-                promises.unshift($http.get(html, {
+                return $q.all([ $http.get(html, {
                     cache: $templateCache
-                }));
-                return $q.all(promises).then(function(result) {
+                }), fileLoader.loadFiles(filetags) ]).then(function(result) {
                     return result[0].data;
                 });
             }
