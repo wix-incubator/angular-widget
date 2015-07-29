@@ -206,6 +206,27 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
 
 "use strict";
 
+(function() {
+    function FileLoader(tagAppender, $q) {
+        function loadSequentially(filenames) {
+            return filenames.reduce(function(previousPromise, filename) {
+                return previousPromise.then(function() {
+                    return tagAppender(filename, filename.split(".").reverse()[0]);
+                });
+            }, $q.when());
+        }
+        this.loadFiles = function(fileNames) {
+            return $q.all(fileNames.map(function(filename) {
+                return Array.isArray(filename) ? loadSequentially(filename) : tagAppender(filename, filename.split(".").reverse()[0]);
+            }));
+        };
+    }
+    FileLoader.$inject = [ "tagAppender", "$q" ];
+    angular.module("angularWidgetInternal").service("fileLoader", FileLoader);
+})();
+
+"use strict";
+
 angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).factory("requirejs", function() {
     return window.requirejs;
 }).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", "requirejs", function($q, $rootScope, headElement, $interval, navigator, $document, requirejs) {
