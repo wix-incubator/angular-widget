@@ -144,6 +144,25 @@ describe('Unit testing tagAppender service', function () {
     expect(success).toHaveBeenCalled();
   }));
 
+  it('should block protractor while script is still downloading', function () {
+    //must create different injector since injector created by inject() includes
+    //ngMock, which replaces $browser.notifyWhenNoOutstandingRequests() with
+    //implementation which immediately invokes callback no matter what
+    var $injector = angular.injector(['ng', 'angularWidgetInternal', function ($provide) {
+      $provide.value('headElement', headElement);
+      $provide.value('requirejs', undefined);
+    }]);
+
+    $injector.invoke(function (tagAppender, $browser) {
+      var protractor = jasmine.createSpy('protractor');
+      tagAppender('dummy.js', 'js');
+      $browser.notifyWhenNoOutstandingRequests(protractor);
+      expect(protractor).not.toHaveBeenCalled();
+      headElement.appendChild.calls[0].args[0].onload();
+      expect(protractor).toHaveBeenCalled();
+    });
+  });
+
   it('should reject the promise when onerror is invoked', inject(function (tagAppender) {
     var error = jasmine.createSpy('error');
     tagAppender('dummy.js', 'js').catch(error);

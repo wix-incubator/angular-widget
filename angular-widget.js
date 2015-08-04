@@ -41,6 +41,7 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
         return $delegate;
     } ]);
 } ]).config([ "widgetsProvider", function(widgetsProvider) {
+    widgetsProvider.addServiceToShare("$browser");
     widgetsProvider.addServiceToShare("$location", {
         url: 1,
         path: 1,
@@ -228,8 +229,8 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
 "use strict";
 
 angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).factory("requirejs", function() {
-    return window.requirejs;
-}).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", "requirejs", function($q, $rootScope, headElement, $interval, navigator, $document, requirejs) {
+    return window.requirejs || null;
+}).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", "requirejs", "$browser", function($q, $rootScope, headElement, $interval, navigator, $document, requirejs, $browser) {
     var requireCache = [];
     var styleSheets = $document[0].styleSheets;
     function noprotocol(url) {
@@ -237,6 +238,10 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
     }
     return function(url, filetype) {
         var deferred = $q.defer();
+        deferred.promise.finally(function() {
+            $browser.$$completeOutstandingRequest(angular.noop);
+        });
+        $browser.$$incOutstandingRequestCount();
         if (requirejs && filetype === "js") {
             requirejs([ url ], function(module) {
                 deferred.resolve(module);

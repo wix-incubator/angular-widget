@@ -4,10 +4,10 @@
 angular.module('angularWidgetInternal')
   .value('headElement', document.getElementsByTagName('head')[0])
   .factory('requirejs', function () {
-    return window.requirejs;
+    return window.requirejs || null;
   })
   .value('navigator', navigator)
-  .factory('tagAppender', function ($q, $rootScope, headElement, $interval, navigator, $document, requirejs) {
+  .factory('tagAppender', function ($q, $rootScope, headElement, $interval, navigator, $document, requirejs, $browser) {
     var requireCache = [];
     var styleSheets = $document[0].styleSheets;
 
@@ -17,6 +17,10 @@ angular.module('angularWidgetInternal')
 
     return function (url, filetype) {
       var deferred = $q.defer();
+      deferred.promise.finally(function () {
+        $browser.$$completeOutstandingRequest(angular.noop);
+      });
+      $browser.$$incOutstandingRequestCount();
       if (requirejs && filetype === 'js') {
         requirejs([url], function (module) {
           deferred.resolve(module);

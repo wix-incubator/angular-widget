@@ -54,6 +54,9 @@ angular.module('angularWidget', ['angularWidgetInternal'])
     });
   })
   .config(function (widgetsProvider) {
+    //sharing the $browser so that everyone will maintain the same
+    //outstanding requests counter (necessary for protractor to work)
+    widgetsProvider.addServiceToShare('$browser');
     //sharing the $location between everyone is the only way to have
     //a single source of truth about the current location.
     widgetsProvider.addServiceToShare('$location', {
