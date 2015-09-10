@@ -73,6 +73,20 @@ describe('Unit testing routing hacks', function () {
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
 
+  it('should not prevent route change if route reloads on search', inject(function ($rootScope) {
+    var eventSpy = jasmine.createSpy('$routeChangeSuccess');
+    $route.current.locals = {$template: '<ng-widget>'};
+    $route.current.$$route.reloadOnSearch = true;
+
+    $rootScope.$on('$routeChangeSuccess', eventSpy);
+    $rootScope.$broadcast('$routeChangeSuccess');
+    expect(eventSpy).toHaveBeenCalled();
+    eventSpy.reset();
+
+    $rootScope.$broadcast('$routeChangeSuccess');
+    expect(eventSpy).toHaveBeenCalled();
+  }));
+
   it('should not prevent route change if widget changed', inject(function ($rootScope) {
     var eventSpy = jasmine.createSpy('$routeChangeSuccess');
     $route.current.locals = {$template: '<ng-widget>'};

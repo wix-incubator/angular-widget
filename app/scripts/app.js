@@ -29,6 +29,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
             last = next;
             next = $route.current;
             if (next && last && next.$$route === last.$$route &&
+                !next.$$route.reloadOnSearch &&
                 next.locals && next.locals.$template &&
                 next.locals.$template.indexOf('<ng-widget') !== -1) {
               suspendedNotify(widgets, $location);

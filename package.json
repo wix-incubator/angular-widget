@@ -8,5 +8,9 @@
   },
   "engines": {
     "node": ">=0.8.0"
+  },
+  "scripts": {
+    "build": "node_modules/wix-gruntfile/scripts/build.sh",
+    "release": "node_modules/wix-gruntfile/scripts/release.sh"
   }
 }
