@@ -73,6 +73,24 @@ describe('Unit testing tagAppender service', function () {
       .toBe('<script type="text/javascript" src="dummy.js"></script>');
   }));
 
+  it('should return the same promise when same file loads twice simultaneously ', inject (function (tagAppender) {
+    var firstLoadPromise = tagAppender('dummy.js', 'js');
+    var secondLoadPromise = tagAppender('dummy.js', 'js');
+    expect(firstLoadPromise).toEqual(secondLoadPromise);
+  }));
+
+  it('should re try to download the file in case first attempt failed', inject (function (tagAppender) {
+    var secondAttemptSuccess = jasmine.createSpy('secondAttemptSuccess');
+
+    tagAppender('dummy.js', 'js').catch(function () {
+      tagAppender('dummy.js', 'js').then(secondAttemptSuccess);
+      simulateLoadSuccessOnCall(1);
+    });
+
+    simulateLoadErrorOnCall(0);
+    expect(secondAttemptSuccess).toHaveBeenCalled();
+  }));
+
   it('should append link tag when css file is added', inject(function (tagAppender) {
     tagAppender('dummy.css', 'css');
     expect(headElement.appendChild.calls.length).toBe(1);
@@ -197,5 +215,13 @@ describe('Unit testing tagAppender service', function () {
     callLater();
     expect(success.calls.length).toBe(1);
   }));
+
+  function simulateLoadSuccessOnCall(callIndex) {
+    headElement.appendChild.calls[callIndex].args[0].onload();
+  }
+
+  function simulateLoadErrorOnCall(callIndex) {
+    headElement.appendChild.calls[callIndex].args[0].onerror();
+  }
 
 });

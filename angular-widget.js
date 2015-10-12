@@ -231,7 +231,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
 angular.module("angularWidgetInternal").value("headElement", document.getElementsByTagName("head")[0]).factory("requirejs", function() {
     return window.requirejs || null;
 }).value("navigator", navigator).factory("tagAppender", [ "$q", "$rootScope", "headElement", "$interval", "navigator", "$document", "requirejs", "$browser", function($q, $rootScope, headElement, $interval, navigator, $document, requirejs, $browser) {
-    var requireCache = [];
+    var requireCache = {};
     var styleSheets = $document[0].styleSheets;
     function noprotocol(url) {
         return url.replace(/^.*:\/\//, "//");
@@ -252,10 +252,10 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
             });
             return deferred.promise;
         }
-        if (requireCache.indexOf(url) !== -1) {
-            deferred.resolve();
-            return deferred.promise;
+        if (url in requireCache) {
+            return requireCache[url];
         }
+        requireCache[url] = deferred.promise;
         var fileref;
         if (filetype === "css") {
             fileref = angular.element("<link></link>")[0];
@@ -271,6 +271,7 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
         headElement.appendChild(fileref);
         fileref.onerror = function() {
             fileref.onerror = fileref.onload = fileref.onreadystatechange = null;
+            delete requireCache[url];
             if ($rootScope.$$phase) {
                 deferred.reject();
             } else {
@@ -283,7 +284,6 @@ angular.module("angularWidgetInternal").value("headElement", document.getElement
             if (!done && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
                 done = true;
                 fileref.onerror = fileref.onload = fileref.onreadystatechange = null;
-                requireCache.push(url);
                 if ($rootScope.$$phase) {
                     deferred.resolve();
                 } else {
