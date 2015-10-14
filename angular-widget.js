@@ -117,13 +117,20 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                     if (!emit && !event.stopPropagation || emit && event.stopPropagation) {
                         var args = Array.prototype.slice.call(arguments);
                         args[0] = name;
-                        dst.$apply(function() {
-                            if (fn.apply(dst, args).defaultPrevented) {
-                                event.preventDefault();
-                            }
-                        });
+                        if (dst.$root.$$phase) {
+                            applyHandler(fn, dst, args, event);
+                        } else {
+                            dst.$apply(function() {
+                                applyHandler(fn, dst, args, event);
+                            });
+                        }
                     }
                 });
+            }
+            function applyHandler(fn, dst, args, event) {
+                if (fn.apply(dst, args).defaultPrevented) {
+                    event.preventDefault();
+                }
             }
             function handleNewInjector() {
                 var widgetConfig = injector.get("widgetConfig");

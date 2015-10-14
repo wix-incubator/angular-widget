@@ -38,6 +38,7 @@ describe('Unit testing ngWidget directive', function () {
 
       widgetsProvider.addServiceToShare('$location');
       widgetsProvider.addEventToForward('$locationChangeStart');
+      widgetsProvider.addEventToForward('someEventToForward');
     });
   });
 
@@ -149,6 +150,26 @@ describe('Unit testing ngWidget directive', function () {
     expect(eventSpy).toHaveBeenCalledWith(jasmine.any(Object), 1, 2, 3);
     expect(eventSpy2).not.toHaveBeenCalled();
     expect(watchSpy).toHaveBeenCalled();
+  }));
+
+  it('should call forward events handler while running main scope\'s $digest cycle', inject(function ($rootScope) {
+    downloadWidgetSuccess();
+    compileWidget();
+    flushDownload();
+
+    var widgetScope = widgetInjector.get('$rootScope');
+    var event1Handler = jasmine.createSpy('$locationChangeStart');
+    var event2Handler = jasmine.createSpy('someEventToForward');
+
+    $rootScope.$on('someEventToForward', event2Handler);
+    $rootScope.$on('$locationChangeStart', event1Handler.andCallFake(function () {
+      widgetScope.$emit('someEventToForward');
+    }));
+
+    widgetScope.$emit('$locationChangeStart');
+
+    expect(event1Handler).toHaveBeenCalledWith(jasmine.any(Object));
+    expect(event2Handler).toHaveBeenCalled();
   }));
 
   it('should emit events that were declared as forwarded', inject(function ($rootScope) {
