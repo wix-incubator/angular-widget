@@ -73,10 +73,10 @@ describe('Unit testing tagAppender service', function () {
       .toBe('<script type="text/javascript" src="dummy.js"></script>');
   }));
 
-  it('should return the same promise when same file loads twice simultaneously ', inject (function (tagAppender) {
-    var firstLoadPromise = tagAppender('dummy.js', 'js');
-    var secondLoadPromise = tagAppender('dummy.js', 'js');
-    expect(firstLoadPromise).toEqual(secondLoadPromise);
+  it('should load the file only once in case the same file is loaded multiple times simultaneously ', inject (function (tagAppender) {
+    tagAppender('dummy.js', 'js');
+    tagAppender('dummy.js', 'js');
+    expect(headElement.appendChild.calls.length).toBe(1);
   }));
 
   it('should re try to download the file in case first attempt failed', inject (function (tagAppender) {

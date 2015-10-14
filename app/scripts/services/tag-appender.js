@@ -32,7 +32,12 @@ angular.module('angularWidgetInternal')
         return deferred.promise;
       }
       if (url in requireCache) {
-        return requireCache[url];
+        requireCache[url].then(function (res) {
+          deferred.resolve(res);
+        }, function (res) {
+          deferred.reject(res);
+        });
+        return deferred.promise;
       }
       requireCache[url] = deferred.promise;
 
