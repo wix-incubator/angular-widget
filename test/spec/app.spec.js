@@ -53,6 +53,7 @@ describe('Unit testing routing hacks', function () {
       $rootScope.$broadcast('$routeUpdate');
     });
     $rootScope.$broadcast('$routeUpdate');
+    expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeStart', 'http://server/', '');
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
 
@@ -70,6 +71,7 @@ describe('Unit testing routing hacks', function () {
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).not.toHaveBeenCalled();
     expect(eventSpyMuted).toHaveBeenCalled();
+    expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeStart', 'http://server/', '');
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
 

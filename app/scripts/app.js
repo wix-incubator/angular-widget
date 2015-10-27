@@ -18,6 +18,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
 
       function suspendedNotify(widgets, $location) {
         suspendListener = true;
+        widgets.notifyWidgets('$locationChangeStart', $location.absUrl(), '');
         widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
         suspendListener = false;
       }
