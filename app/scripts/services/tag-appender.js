@@ -23,11 +23,13 @@ angular.module('angularWidgetInternal')
       $browser.$$incOutstandingRequestCount();
       if (requirejs && filetype === 'js') {
         requirejs([url], function (module) {
-          deferred.resolve(module);
-          $rootScope.$digest();
+          $rootScope.$apply(function () {
+            deferred.resolve(module);
+          });
         }, function (err) {
-          deferred.reject(err);
-          $rootScope.$digest();
+          $rootScope.$apply(function () {
+            deferred.reject(err);
+          });
         });
         return deferred.promise;
       }
