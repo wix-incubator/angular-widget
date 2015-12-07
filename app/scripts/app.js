@@ -55,6 +55,15 @@ angular.module('angularWidget', ['angularWidgetInternal'])
       return $delegate;
     });
   })
+  .config(function ($provide) {
+    $provide.decorator('$browser', function ($delegate) {
+      //removing applicationDestroyed handler since it unregisters from
+      //listening to popstate. since we only have a single $browser for
+      //all instance, this is actually something we never want to happen.
+      $delegate.$$applicationDestroyed = angular.noop;
+      return $delegate;
+    });
+  })
   .config(function (widgetsProvider) {
     //sharing the $browser so that everyone will maintain the same
     //outstanding requests counter (necessary for protractor to work)

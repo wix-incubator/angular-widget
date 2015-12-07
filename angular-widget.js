@@ -41,6 +41,11 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
         });
         return $delegate;
     } ]);
+} ]).config([ "$provide", function($provide) {
+    $provide.decorator("$browser", [ "$delegate", function($delegate) {
+        $delegate.$$applicationDestroyed = angular.noop;
+        return $delegate;
+    } ]);
 } ]).config([ "widgetsProvider", function(widgetsProvider) {
     widgetsProvider.addServiceToShare("$browser");
     widgetsProvider.addServiceToShare("$location", {
