@@ -30,7 +30,7 @@ describe('Unit testing ngWidget directive', function () {
             html: 'views/' + name + '-widget.html',
             files: [
               'scripts/' + name + '-widget.js',
-              'styles/' +  name + '-widget.css'
+              'styles/' + name + '-widget.css'
             ]
           };
         };
@@ -59,8 +59,8 @@ describe('Unit testing ngWidget directive', function () {
       scope = scope || $rootScope;
       scope.widget = scope.widget || 'dummy';
       element = $compile('<ng-widget src="widget" options="options"' +
-                         (delay === undefined ? '' : ' delay="' + delay + '"') +
-                         '></ng-widget>')(scope);
+        (delay === undefined ? '' : ' delay="' + delay + '"') +
+        '></ng-widget>')(scope);
 
       spies = jasmine.createSpyObj('spies', ['exportPropertiesUpdated', 'widgetLoaded', 'widgetError']);
       $rootScope.$on('exportPropertiesUpdated', spies.exportPropertiesUpdated);
@@ -233,7 +233,9 @@ describe('Unit testing ngWidget directive', function () {
     widgetScope.$on('$locationChangeStart', eventSpy);
     expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(false);
 
-    eventSpy.andCallFake(function (e) { e.preventDefault(); });
+    eventSpy.andCallFake(function (e) {
+      e.preventDefault();
+    });
     expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
   }));
 
@@ -248,7 +250,9 @@ describe('Unit testing ngWidget directive', function () {
     $rootScope.$on('$locationChangeStart', eventSpy);
     expect(widgetScope.$emit('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(false);
 
-    eventSpy.andCallFake(function (e) { e.preventDefault(); });
+    eventSpy.andCallFake(function (e) {
+      e.preventDefault();
+    });
     expect(widgetScope.$emit('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
   }));
 
@@ -448,14 +452,78 @@ describe('Unit testing ngWidget directive', function () {
   it('should run custom config block when bootstraping', inject(function (widgets) {
     var hook = widgets.getWidgetManifest;
     widgets.getWidgetManifest = function () {
-      return angular.extend(hook.apply(widgets, arguments), {config: [function ($provide) {
-        $provide.value('shahata', 123);
-      }]});
+      return angular.extend(hook.apply(widgets, arguments), {
+        config: [function ($provide) {
+          $provide.value('shahata', 123);
+        }]
+      });
     };
     downloadWidgetSuccess();
     compileWidget();
     flushDownload();
     expect(widgetInjector.get('shahata')).toBe(123);
   }));
+
+  it('should block protractor while widget is still downloading', function () {
+    var element;
+    var widgetContent = 'some text';
+    var protractor = jasmine.createSpy('protractor').andCallFake(function () {
+      expect(element.text()).toBe(widgetContent);
+    });
+
+    runs(function () {
+      var $injector = createNewInjectorAndConfigureWidget(['widget1.html.js', 'widget2.html.js'], widgetContent);
+
+      $injector.invoke(function ($compile, $browser, $rootScope) {
+        element = $compile('<ng-widget src="\'dummy\'"></ng-widget>')($rootScope);
+        $browser.notifyWhenNoOutstandingRequests(protractor);
+      });
+    });
+
+    waitsFor(function () {
+      return !!protractor.calls.length;
+    }, 'protractor was not called', 2000);
+  });
+
+  it('should release protractor in case the widget had errors while loading', function () {
+    var element;
+    var protractor = jasmine.createSpy('protractor');
+
+    runs(function () {
+      var $injector = createNewInjectorAndConfigureWidget(['some-non-existing.html.js', 'widget1.html.js']);
+
+      $injector.invoke(function ($compile, $browser, $rootScope) {
+        element = $compile('<ng-widget src="\'dummy\'"></ng-widget>')($rootScope);
+        $browser.notifyWhenNoOutstandingRequests(protractor);
+      });
+    });
+
+    waitsFor(function () {
+      return !!protractor.calls.length;
+    }, 'protractor was not called', 2000);
+  });
+
+  function createNewInjectorAndConfigureWidget(files, widgetContent) {
+    //must create different injector since injector created by inject() includes
+    //ngMock, which replaces $browser.notifyWhenNoOutstandingRequests() with
+    //implementation which immediately invokes callback no matter what
+    files = files.map(function (fileName) {
+      return '/base/app/views/' + fileName;
+    });
+    return angular.injector(['ng', 'angularWidget', function ($provide) {
+      $provide.value('$rootElement', angular.element('<div></div>'));
+    }, function (widgetsProvider) {
+      widgetsProvider.setManifestGenerator(function ($templateCache) {
+        $templateCache.put('views/dummy-widget.html', '<div>' + widgetContent + '</div>');
+        return function manifestGenerator() {
+          return {
+            module: 'dummyWidget',
+            html: 'views/dummy-widget.html',
+            files: [files]
+          };
+        };
+      });
+    }]);
+  }
 
 });

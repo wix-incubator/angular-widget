@@ -69,7 +69,7 @@ angular.module("angularWidgetOnly", []).run([ "$rootScope", "$location", functio
 
 "use strict";
 
-angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "fileLoader", "widgets", "$rootScope", "$log", function($http, $templateCache, $q, $timeout, fileLoader, widgets, $rootScope, $log) {
+angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templateCache", "$q", "$timeout", "fileLoader", "widgets", "$rootScope", "$log", "$browser", function($http, $templateCache, $q, $timeout, fileLoader, widgets, $rootScope, $log, $browser) {
     return {
         restrict: "E",
         priority: 999,
@@ -80,6 +80,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             delay: "@"
         },
         link: function(scope, element) {
+            widgetConfigSection.$inject = [ "$provide", "widgetConfigProvider" ];
             var changeCounter = 0, injector, unsubscribe;
             function widgetConfigSection($provide, widgetConfigProvider) {
                 angular.forEach(widgets.getServicesToShare(), function(value, key) {
@@ -88,7 +89,6 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                 widgetConfigProvider.setParentInjectorScope(scope);
                 widgetConfigProvider.setOptions(scope.options);
             }
-            widgetConfigSection.$inject = [ "$provide", "widgetConfigProvider" ];
             function whenTimeout(result, delay) {
                 return delay ? $timeout(function() {
                     return result;
@@ -168,6 +168,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             function bootstrapWidget(src, delay) {
                 var thisChangeId = ++changeCounter;
                 $q.when(widgets.getWidgetManifest(src)).then(function(manifest) {
+                    $browser.$$incOutstandingRequestCount();
                     delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay).then(function(response) {
                         if (thisChangeId !== changeCounter) {
                             return;
@@ -183,10 +184,12 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                             $log.error(e);
                             scope.$emit("widgetError");
                         }
-                    }, function() {
+                    }).catch(function() {
                         if (thisChangeId === changeCounter) {
                             scope.$emit("widgetError");
                         }
+                    }).finally(function() {
+                        $browser.$$completeOutstandingRequest(angular.noop);
                     });
                 });
             }
@@ -221,6 +224,7 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
 "use strict";
 
 (function() {
+    FileLoader.$inject = [ "tagAppender", "$q" ];
     function FileLoader(tagAppender, $q) {
         function loadSequentially(filenames) {
             return filenames.reduce(function(previousPromise, filename) {
@@ -235,7 +239,6 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
             }));
         };
     }
-    FileLoader.$inject = [ "tagAppender", "$q" ];
     angular.module("angularWidgetInternal").service("fileLoader", FileLoader);
 })();
 
