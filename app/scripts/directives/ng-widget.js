@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularWidgetInternal')
-  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, fileLoader, widgets, $rootScope, $log) {
+  .directive('ngWidget', function ($http, $templateCache, $q, $timeout, fileLoader, widgets, $rootScope, $log, $browser) {
     return {
       restrict: 'E',
       priority: 999,
@@ -119,6 +119,7 @@ angular.module('angularWidgetInternal')
         function bootstrapWidget(src, delay) {
           var thisChangeId = ++changeCounter;
           $q.when(widgets.getWidgetManifest(src)).then(function (manifest) {
+            $browser.$$incOutstandingRequestCount();
             delayedPromise(downloadWidget(manifest.module, manifest.html, manifest.files), delay)
               .then(function (response) {
                 if (thisChangeId !== changeCounter) {
@@ -141,11 +142,13 @@ angular.module('angularWidgetInternal')
                   $log.error(e);
                   scope.$emit('widgetError');
                 }
-              }, function () {
-                if (thisChangeId === changeCounter) {
-                  scope.$emit('widgetError');
-                }
-              });
+              }).catch(function () {
+              if (thisChangeId === changeCounter) {
+                scope.$emit('widgetError');
+              }
+            }).finally(function () {
+              $browser.$$completeOutstandingRequest(angular.noop);
+            });
           });
         }
 
