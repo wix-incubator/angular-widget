@@ -1,0 +1,16 @@
+/* line 1, ../../app/styles/widget1.scss */
+.widget1 {
+  position: relative;
+  border-radius: 6px;
+  background-color: #eeeeee;
+  padding: 60px;
+  width: 100px;
+  font-size: 18px;
+  font-weight: 200;
+}
+/* line 10, ../../app/styles/widget1.scss */
+.widget1 h1 {
+  line-height: 1;
+  letter-spacing: -1px;
+  font-size: 60px;
+}
