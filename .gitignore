@@ -19,3 +19,4 @@ reference.ts
 .baseDir.ts
 .tscache
 Gemfile.lock
+/angular-widget.js
