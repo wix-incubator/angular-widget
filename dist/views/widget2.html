@@ -1,0 +1,6 @@
+<div class="widget2" ng-controller="Widget2Ctrl">
+  <ul>
+    <li ng-repeat="thing in awesomeThings | limitTo:widgetOptions.collapse ? 2 : awesomeThings.length">{{thing}}</li>
+    <button ng-click="widgetOptions.collapse = !widgetOptions.collapse">{{widgetOptions.collapse ? 'expand' : 'collpase'}}</button>
+  </ul>
+</div>

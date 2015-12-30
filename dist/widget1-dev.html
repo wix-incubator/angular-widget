@@ -1,0 +1,34 @@
+<!doctype html>
+<html ng-app="widgetTestApp">
+  <head>
+    <title>widget1</title>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-widget/angular-widget.js"></script>
+    <!-- #if( !${debug} ) -->
+<link rel="stylesheet" href="styles/widget1.css">
+<!-- #else -#if( false )#end->
+<link rel="stylesheet" href="_debug_styles/widget1.css"><!-- #end -->
+    <!-- #if( !${debug} ) -->
+<script src="scripts/controllers/widget1.js"></script>
+<!-- #else -#if( false )#end->
+<script src="_debug_scripts/controllers/widget1.js"></script><!-- #end -->
+  </head>
+  <body>
+    <ng-widget src="'widget1'"></ng-widget>
+
+    <script>
+      'use strict';
+      angular.module('widgetTestApp', ['angularWidget']).config(function (widgetsProvider) {
+        widgetsProvider.setManifestGenerator(function () {
+          return function () {
+            return {
+              module: 'widget1',
+              html: 'views/widget1.html',
+              files: []
+            };
+          };
+        });
+      });
+    </script>
+  </body>
+</html>

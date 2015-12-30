@@ -1,0 +1,19 @@
+<div ng-controller="widgetsList" style="background-color: blue; overflow: hidden; padding: 15px">
+  <button ng-click="addWidget('widget1', 1)">add widget1...</button>
+  <button ng-click="addWidget('widget2', 1)">add widget2...</button>
+  <button ng-click="addWidget('widget1', 100)">add 100 widgets...</button>
+  <button ng-click="widgets = []">clear widgets...</button>
+  <button ng-click="shouldShow = !shouldShow">show widgets...</button>
+  <button ng-click="options.collapse = !options.collapse">{{options.collapse ? 'expand' : 'collapse'}} all...</button>
+  <br/><br/><br/>
+
+  <div ng-if="shouldShow" ng-repeat="widget in widgets track by widget.id" style="float: left; position: relative; padding-right: 10px">
+    <div ng-controller="widgetContainer">
+      <span ng-show="title" ng-bind="title"></span>
+      <button ng-click="widgets.splice($index, 1)">del</button>
+      <div ng-show="isLoading">LOADING...</div>
+      <div ng-show="isError">ERROR... <button ng-click="reload()">reload</button></div>
+      <ng-widget class="container" src="widget.src" options="options" ng-show="!isLoading && !isError"></ng-widget>
+    </div>
+  </div>
+</div>

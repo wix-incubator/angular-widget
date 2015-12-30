@@ -1,0 +1,8 @@
+<div ng-init="navigationCount = 0" style="background-color: red; padding: 15px">
+  <a ng-repeat="app in ['sub1', 'sub2', 'sub3']" ng-href="#/app3/{{app}}"
+    ng-click="$parent.navigationCount = navigationCount + 1"
+    style="padding: 5px">{{app}}</a>
+  <span>{{navigationCount}}</span><br/><br/>
+  <ui-view></ui-view>
+  <br/>
+</div>
