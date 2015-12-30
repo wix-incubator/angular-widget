@@ -40,6 +40,6 @@ module.exports = function (grunt) {
     }
   });
 
-  grunt.hookTask('build').push('copy:js');
+  grunt.hookTask('package').push('copy:js');
 
 };
