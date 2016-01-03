@@ -146,22 +146,21 @@ angular.module('angularWidgetInternal')
           });
         }
 
-        function downloadWidget(module, html, filetags) {
+        function moduleAlreadyExists(name) {
           try {
             //testing requires instead of only module just so we can control if this happens in tests
-            if (angular.module(module).requires.length) {
-              return $http.get(html, {cache: $templateCache}).then(function (response) {
-                return response.data;
-              });
-            }
+            return !!angular.module(name).requires.length;
           } catch (e) {
-
+            return false;
           }
+        }
 
-          return $q.all([
-              $http.get(html, {cache: $templateCache}),
-              fileLoader.loadFiles(filetags)
-            ]).then(function (result) {
+        function downloadWidget(module, html, filetags) {
+          var promises = [$http.get(html, {cache: $templateCache})];
+          if (!moduleAlreadyExists(module)) {
+            promises.push(fileLoader.loadFiles(filetags));
+          }
+          return $q.all(promises).then(function (result) {
             return result[0].data;
           });
         }

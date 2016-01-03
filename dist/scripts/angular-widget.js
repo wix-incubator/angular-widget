@@ -101,19 +101,21 @@ angular.module("angularWidgetInternal").directive("ngWidget", [ "$http", "$templ
                     return whenTimeout($q.reject(result), delay);
                 });
             }
-            function downloadWidget(module, html, filetags) {
+            function moduleAlreadyExists(name) {
                 try {
-                    if (angular.module(module).requires.length) {
-                        return $http.get(html, {
-                            cache: $templateCache
-                        }).then(function(response) {
-                            return response.data;
-                        });
-                    }
-                } catch (e) {}
-                return $q.all([ $http.get(html, {
+                    return !!angular.module(name).requires.length;
+                } catch (e) {
+                    return false;
+                }
+            }
+            function downloadWidget(module, html, filetags) {
+                var promises = [ $http.get(html, {
                     cache: $templateCache
-                }), fileLoader.loadFiles(filetags) ]).then(function(result) {
+                }) ];
+                if (!moduleAlreadyExists(module)) {
+                    promises.push(fileLoader.loadFiles(filetags));
+                }
+                return $q.all(promises).then(function(result) {
                     return result[0].data;
                 });
             }
