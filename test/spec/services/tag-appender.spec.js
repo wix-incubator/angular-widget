@@ -29,54 +29,46 @@ describe('Unit testing tagAppender service', function () {
       delete $window.lazyLoadingWorking;
     }));
 
-    it('should load the javascript files',  inject (function (tagAppender, $window) {
-      var done = false;
-      expect($window.lazyLoadingWorking).toBeFalsy();
-      tagAppender(moduleName, 'js').then(function () {
-        expect($window.lazyLoadingWorking).toBe(true);
-        done = true;
-      });
-      waitsFor(function () {
-        return done;
-      });
-    }));
-
-    it('should fail when file doesn\'t exist', inject (function (tagAppender) {
-      var done = false;
-      tagAppender('base/test/mock/non-existing-file.js', 'js').catch(function () {
-        done = true;
-      });
-      waitsFor(function () {
-        return done;
-      });
-    }));
-
-    it('should not fail when same file loads two times', inject (function (tagAppender, $window) {
-      var done = false;
-      expect($window.lazyLoadingWorking).toBeFalsy();
-      tagAppender(moduleName, 'js').then(function () {
+    it('should load the javascript files', function (done) {
+      inject(function (tagAppender, $window) {
+        expect($window.lazyLoadingWorking).toBeFalsy();
         tagAppender(moduleName, 'js').then(function () {
           expect($window.lazyLoadingWorking).toBe(true);
-          done = true;
+          done();
         });
       });
-      waitsFor(function () {
-        return done;
+    });
+
+    it('should fail when file doesn\'t exist', function (done) {
+      inject(function (tagAppender) {
+        tagAppender('base/test/mock/non-existing-file.js', 'js').catch(done);
       });
-    }));
+    });
+
+    it('should not fail when same file loads two times', function (done) {
+      inject (function (tagAppender, $window) {
+        expect($window.lazyLoadingWorking).toBeFalsy();
+        tagAppender(moduleName, 'js').then(function () {
+          tagAppender(moduleName, 'js').then(function () {
+            expect($window.lazyLoadingWorking).toBe(true);
+            done();
+          });
+        });
+      });
+    });
   });
 
   it('should append script tag when js file is added', inject(function (tagAppender) {
     tagAppender('dummy.js', 'js');
-    expect(headElement.appendChild.calls.length).toBe(1);
-    expect(headElement.appendChild.calls[0].args[0].outerHTML)
+    expect(headElement.appendChild.calls.count()).toBe(1);
+    expect(headElement.appendChild.calls.first().args[0].outerHTML)
       .toBe('<script type="text/javascript" src="dummy.js"></script>');
   }));
 
   it('should load the file only once in case the same file is loaded multiple times simultaneously ', inject (function (tagAppender) {
     tagAppender('dummy.js', 'js');
     tagAppender('dummy.js', 'js');
-    expect(headElement.appendChild.calls.length).toBe(1);
+    expect(headElement.appendChild.calls.count()).toBe(1);
   }));
 
   it('should re try to download the file in case first attempt failed', inject (function (tagAppender) {
@@ -93,8 +85,8 @@ describe('Unit testing tagAppender service', function () {
 
   it('should append link tag when css file is added', inject(function (tagAppender) {
     tagAppender('dummy.css', 'css');
-    expect(headElement.appendChild.calls.length).toBe(1);
-    expect(headElement.appendChild.calls[0].args[0].outerHTML)
+    expect(headElement.appendChild.calls.count()).toBe(1);
+    expect(headElement.appendChild.calls.first().args[0].outerHTML)
       .toBe('<link rel="stylesheet" type="text/css" href="dummy.css">');
   }));
 
@@ -158,7 +150,7 @@ describe('Unit testing tagAppender service', function () {
   it('should resolve the promise when onload is invoked', inject(function (tagAppender) {
     var success = jasmine.createSpy('success');
     tagAppender('dummy.js', 'js').then(success);
-    headElement.appendChild.calls[0].args[0].onload();
+    headElement.appendChild.calls.first().args[0].onload();
     expect(success).toHaveBeenCalled();
   }));
 
@@ -176,7 +168,7 @@ describe('Unit testing tagAppender service', function () {
       tagAppender('dummy.js', 'js');
       $browser.notifyWhenNoOutstandingRequests(protractor);
       expect(protractor).not.toHaveBeenCalled();
-      headElement.appendChild.calls[0].args[0].onload();
+      headElement.appendChild.calls.first().args[0].onload();
       expect(protractor).toHaveBeenCalled();
     });
   });
@@ -184,13 +176,13 @@ describe('Unit testing tagAppender service', function () {
   it('should reject the promise when onerror is invoked', inject(function (tagAppender) {
     var error = jasmine.createSpy('error');
     tagAppender('dummy.js', 'js').catch(error);
-    headElement.appendChild.calls[0].args[0].onerror();
+    headElement.appendChild.calls.first().args[0].onerror();
     expect(error).toHaveBeenCalled();
   }));
 
   it('should download each file only once', inject(function (tagAppender, $rootScope) {
     tagAppender('dummy.js', 'js');
-    headElement.appendChild.calls[0].args[0].onload();
+    headElement.appendChild.calls.first().args[0].onload();
 
     var success = jasmine.createSpy('success');
     tagAppender('dummy.js', 'js').then(success);
@@ -201,27 +193,27 @@ describe('Unit testing tagAppender service', function () {
   it('should be compatible with IE readyState', inject(function (tagAppender) {
     var success = jasmine.createSpy('success');
     tagAppender('dummy.js', 'js').then(success);
-    var callLater = headElement.appendChild.calls[0].args[0].onload;
+    var callLater = headElement.appendChild.calls.first().args[0].onload;
 
-    headElement.appendChild.calls[0].args[0].readyState = 'loading';
-    headElement.appendChild.calls[0].args[0].onreadystatechange();
+    headElement.appendChild.calls.first().args[0].readyState = 'loading';
+    headElement.appendChild.calls.first().args[0].onreadystatechange();
     expect(success).not.toHaveBeenCalled();
 
-    headElement.appendChild.calls[0].args[0].readyState = 'loaded';
-    headElement.appendChild.calls[0].args[0].onreadystatechange();
-    expect(headElement.appendChild.calls[0].args[0].onreadystatechange).toBe(null);
+    headElement.appendChild.calls.first().args[0].readyState = 'loaded';
+    headElement.appendChild.calls.first().args[0].onreadystatechange();
+    expect(headElement.appendChild.calls.first().args[0].onreadystatechange).toBe(null);
     expect(success).toHaveBeenCalled();
 
     callLater();
-    expect(success.calls.length).toBe(1);
+    expect(success.calls.count()).toBe(1);
   }));
 
   function simulateLoadSuccessOnCall(callIndex) {
-    headElement.appendChild.calls[callIndex].args[0].onload();
+    headElement.appendChild.calls.argsFor(callIndex)[0].onload();
   }
 
   function simulateLoadErrorOnCall(callIndex) {
-    headElement.appendChild.calls[callIndex].args[0].onerror();
+    headElement.appendChild.calls.argsFor(callIndex)[0].onerror();
   }
 
 });

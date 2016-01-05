@@ -21,6 +21,7 @@
     "_": false,
     "angular": false,
     "require": false,
+    "process": false,
     "module": false
   }
 }

@@ -24,7 +24,7 @@ describe('Unit testing angular widget only kickoff', function () {
   }));
 
   it('should not broadcast $locationChangeSuccess if $locationChangeStart is prevented', inject(function ($rootScope) {
-    locationChangeStartSpy.andCallFake(function (ev) {
+    locationChangeStartSpy.and.callFake(function (ev) {
       ev.preventDefault();
     });
     $rootScope.$digest();
@@ -49,7 +49,7 @@ describe('Unit testing routing hacks', function () {
   });
 
   it('should notify widgets on location change when route updates', inject(function ($rootScope) {
-    notifyWidgets.andCallFake(function () {
+    notifyWidgets.and.callFake(function () {
       $rootScope.$broadcast('$routeUpdate');
     });
     $rootScope.$broadcast('$routeUpdate');
@@ -66,7 +66,7 @@ describe('Unit testing routing hacks', function () {
     $rootScope.$on('$routeChangeMuted', eventSpyMuted);
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();
-    eventSpy.reset();
+    eventSpy.calls.reset();
 
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).not.toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe('Unit testing routing hacks', function () {
     $rootScope.$on('$routeChangeSuccess', eventSpy);
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();
-    eventSpy.reset();
+    eventSpy.calls.reset();
 
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe('Unit testing routing hacks', function () {
     $rootScope.$on('$routeChangeSuccess', eventSpy);
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();
-    eventSpy.reset();
+    eventSpy.calls.reset();
 
     $route.current = {$$route: {}};
     $route.current.locals = {$template: '<ng-widget>'};
@@ -111,7 +111,7 @@ describe('Unit testing routing hacks', function () {
     $rootScope.$on('$routeChangeSuccess', eventSpy);
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();
-    eventSpy.reset();
+    eventSpy.calls.reset();
 
     $rootScope.$broadcast('$routeChangeSuccess');
     expect(eventSpy).toHaveBeenCalled();

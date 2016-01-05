@@ -79,7 +79,7 @@ describe('Unit testing widgets service', function () {
 
     it('should broadcast event when notifyWidgets is invoked with args', inject(function (widgets) {
       var digestSpy = jasmine.createSpy('$digest');
-      var broadcastSpy = jasmine.createSpy('$broadcastSpy').andReturn('shahata');
+      var broadcastSpy = jasmine.createSpy('$broadcastSpy').and.returnValue('shahata');
       widgets.registerWidget({get: function (name) {
         expect(name).toBe('$rootScope');
         return {$digest: digestSpy, $broadcast: broadcastSpy};

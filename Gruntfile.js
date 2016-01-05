@@ -42,4 +42,6 @@ module.exports = function (grunt) {
 
   grunt.hookTask('package').push('copy:js');
 
+  process.env.USE_JASMINE2 = 'true';
+
 };

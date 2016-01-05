@@ -46,15 +46,15 @@ describe('Unit testing ngWidget directive', function () {
     inject(function ($q, $httpBackend, fileLoader) {
       $httpBackend.expectGET('views/' + (name || 'dummy') + '-widget.html')
         .respond('<div ng-bind="\'123\'"></div>');
-      fileLoader.loadFiles.andReturn($q.when());
+      fileLoader.loadFiles.and.returnValue($q.when());
     });
   }
 
   function compileWidget(scope, delay) {
     inject(function ($compile, $rootScope, _widgets_) {
       widgets = _widgets_;
-      spyOn(widgets, 'registerWidget').andCallThrough();
-      spyOn(widgets, 'unregisterWidget').andCallThrough();
+      spyOn(widgets, 'registerWidget').and.callThrough();
+      spyOn(widgets, 'unregisterWidget').and.callThrough();
 
       scope = scope || $rootScope;
       scope.widget = scope.widget || 'dummy';
@@ -162,7 +162,7 @@ describe('Unit testing ngWidget directive', function () {
     var event2Handler = jasmine.createSpy('someEventToForward');
 
     $rootScope.$on('someEventToForward', event2Handler);
-    $rootScope.$on('$locationChangeStart', event1Handler.andCallFake(function () {
+    $rootScope.$on('$locationChangeStart', event1Handler.and.callFake(function () {
       widgetScope.$emit('someEventToForward');
     }));
 
@@ -233,7 +233,7 @@ describe('Unit testing ngWidget directive', function () {
     widgetScope.$on('$locationChangeStart', eventSpy);
     expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(false);
 
-    eventSpy.andCallFake(function (e) {
+    eventSpy.and.callFake(function (e) {
       e.preventDefault();
     });
     expect($rootScope.$broadcast('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
@@ -250,7 +250,7 @@ describe('Unit testing ngWidget directive', function () {
     $rootScope.$on('$locationChangeStart', eventSpy);
     expect(widgetScope.$emit('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(false);
 
-    eventSpy.andCallFake(function (e) {
+    eventSpy.and.callFake(function (e) {
       e.preventDefault();
     });
     expect(widgetScope.$emit('$locationChangeStart', 1, 2, 3).defaultPrevented).toBe(true);
@@ -323,7 +323,7 @@ describe('Unit testing ngWidget directive', function () {
     $rootScope.$digest();
 
     expect(fileLoader.loadFiles).toHaveBeenCalledWith(['scripts/dummy-widget.js', 'styles/dummy-widget.css']);
-    expect(fileLoader.loadFiles.calls.length).toBe(1);
+    expect(fileLoader.loadFiles.calls.count()).toBe(1);
   }));
 
   it('should not load the files if module exists', inject(function (fileLoader) {
@@ -359,7 +359,7 @@ describe('Unit testing ngWidget directive', function () {
     downloadWidgetSuccess();
     compileWidget();
 
-    fileLoader.loadFiles.andReturn($q.reject());
+    fileLoader.loadFiles.and.returnValue($q.reject());
     flushDownload();
 
     expect(spies.widgetError).toHaveBeenCalled();
@@ -371,7 +371,7 @@ describe('Unit testing ngWidget directive', function () {
 
     $rootScope.widget = 'stam';
     $rootScope.$digest();
-    fileLoader.loadFiles.andReturn($q.reject());
+    fileLoader.loadFiles.and.returnValue($q.reject());
 
     $rootScope.widget = 'dummy';
     downloadWidgetSuccess();
@@ -391,7 +391,7 @@ describe('Unit testing ngWidget directive', function () {
 
     $rootScope.widget = 'dummy';
     downloadWidgetSuccess();
-    fileLoader.loadFiles.andReturn($q.reject());
+    fileLoader.loadFiles.and.returnValue($q.reject());
     flushDownload();
 
     expect(spies.widgetError).toHaveBeenCalled();
@@ -464,43 +464,32 @@ describe('Unit testing ngWidget directive', function () {
     expect(widgetInjector.get('shahata')).toBe(123);
   }));
 
-  it('should block protractor while widget is still downloading', function () {
+  it('should block protractor while widget is still downloading', function (done) {
     var element;
     var widgetContent = 'some text';
-    var protractor = jasmine.createSpy('protractor').andCallFake(function () {
+    var protractor = jasmine.createSpy('protractor').and.callFake(function () {
       expect(element.text()).toBe(widgetContent);
+      done();
     });
 
-    runs(function () {
-      var $injector = createNewInjectorAndConfigureWidget(['widget1.html.js', 'widget2.html.js'], widgetContent);
+    var $injector = createNewInjectorAndConfigureWidget(['widget1.html.js', 'widget2.html.js'], widgetContent);
 
-      $injector.invoke(function ($compile, $browser, $rootScope) {
-        element = $compile('<ng-widget src="\'dummy\'"></ng-widget>')($rootScope);
-        $browser.notifyWhenNoOutstandingRequests(protractor);
-      });
+    $injector.invoke(function ($compile, $browser, $rootScope) {
+      element = $compile('<ng-widget src="\'dummy\'"></ng-widget>')($rootScope);
+      $browser.notifyWhenNoOutstandingRequests(protractor);
     });
-
-    waitsFor(function () {
-      return !!protractor.calls.length;
-    }, 'protractor was not called', 2000);
   });
 
-  it('should release protractor in case the widget had errors while loading', function () {
+  it('should release protractor in case the widget had errors while loading', function (done) {
     var element;
-    var protractor = jasmine.createSpy('protractor');
+    var protractor = jasmine.createSpy('protractor').and.callFake(done);
 
-    runs(function () {
-      var $injector = createNewInjectorAndConfigureWidget(['some-non-existing.html.js', 'widget1.html.js']);
+    var $injector = createNewInjectorAndConfigureWidget(['some-non-existing.html.js', 'widget1.html.js']);
 
-      $injector.invoke(function ($compile, $browser, $rootScope) {
-        element = $compile('<ng-widget src="\'dummy\'"></ng-widget>')($rootScope);
-        $browser.notifyWhenNoOutstandingRequests(protractor);
-      });
+    $injector.invoke(function ($compile, $browser, $rootScope) {
+      element = $compile('<ng-widget src="\'dummy\'"></ng-widget>')($rootScope);
+      $browser.notifyWhenNoOutstandingRequests(protractor);
     });
-
-    waitsFor(function () {
-      return !!protractor.calls.length;
-    }, 'protractor was not called', 2000);
   });
 
   function createNewInjectorAndConfigureWidget(files, widgetContent) {
