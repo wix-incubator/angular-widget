@@ -8,7 +8,7 @@ describe('Service: fileLoader', function () {
 
     module('angularWidgetInternal');
     module({
-      tagAppender: jasmine.createSpy('tagAppender').andCallFake(function () {
+      tagAppender: jasmine.createSpy('tagAppender').and.callFake(function () {
         var defer;
         inject(function ($q) {
           defer = $q.defer();
@@ -35,8 +35,8 @@ describe('Service: fileLoader', function () {
       filenames.forEach(function (filename) {
         expect(tagAppender).toHaveBeenCalledWith(filename, jasmine.any(String));
       });
-      expect(tagAppender.calls.length).toBe(filenames.length);
-      tagAppender.reset();
+      expect(tagAppender.calls.count()).toBe(filenames.length);
+      tagAppender.calls.reset();
       flushPromises(filenames.length);
     });
   }
