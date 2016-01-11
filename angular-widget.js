@@ -8,11 +8,14 @@ angular.module("angularWidget", [ "angularWidgetInternal" ]).config([ "$provide"
     }
     $provide.decorator("$rootScope", [ "$delegate", "$injector", function($delegate, $injector) {
         var next, last, originalBroadcast = $delegate.$broadcast;
+        var lastAbsUrl = "";
         var suspendListener = false;
         function suspendedNotify(widgets, $location) {
             suspendListener = true;
-            widgets.notifyWidgets("$locationChangeStart", $location.absUrl(), "");
-            widgets.notifyWidgets("$locationChangeSuccess", $location.absUrl(), "");
+            var absUrl = $location.absUrl();
+            widgets.notifyWidgets("$locationChangeStart", absUrl, lastAbsUrl);
+            widgets.notifyWidgets("$locationChangeSuccess", absUrl, lastAbsUrl);
+            lastAbsUrl = absUrl;
             suspendListener = false;
         }
         $delegate.$broadcast = function(name) {

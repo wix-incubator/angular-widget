@@ -57,6 +57,18 @@ describe('Unit testing routing hacks', function () {
     expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
   }));
 
+  it('should notify location change with old url', inject(function ($rootScope, $location) {
+    $rootScope.$broadcast('$routeUpdate');
+    expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeStart', 'http://server/', '');
+    expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/', '');
+
+    $location.path('/bla');
+    $rootScope.$broadcast('$routeUpdate');
+
+    expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeStart', 'http://server/#/bla', 'http://server/');
+    expect(notifyWidgets).toHaveBeenCalledWith('$locationChangeSuccess', 'http://server/#/bla', 'http://server/');
+  }));
+
   it('should mute route change if widget did not change', inject(function ($rootScope) {
     var eventSpy = jasmine.createSpy('$routeChangeSuccess');
     var eventSpyMuted = jasmine.createSpy('$routeChangeMuted');

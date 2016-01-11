@@ -11,6 +11,7 @@ angular.module('angularWidget', ['angularWidgetInternal'])
     //an internal route changes, effecting only the router inside that view.
     $provide.decorator('$rootScope', ["$delegate", "$injector", function ($delegate, $injector) {
       var next, last, originalBroadcast = $delegate.$broadcast;
+      var lastAbsUrl = '';
 
       //sending $locationChangeSuccess will cause another $routeUpdate
       //so we need this ugly flag to prevent call stack overflow
@@ -18,8 +19,10 @@ angular.module('angularWidget', ['angularWidgetInternal'])
 
       function suspendedNotify(widgets, $location) {
         suspendListener = true;
-        widgets.notifyWidgets('$locationChangeStart', $location.absUrl(), '');
-        widgets.notifyWidgets('$locationChangeSuccess', $location.absUrl(), '');
+        var absUrl = $location.absUrl();
+        widgets.notifyWidgets('$locationChangeStart', absUrl, lastAbsUrl);
+        widgets.notifyWidgets('$locationChangeSuccess', absUrl, lastAbsUrl);
+        lastAbsUrl = absUrl;
         suspendListener = false;
       }
 
@@ -91,7 +94,7 @@ angular.module('angularWidgetOnly', [])
   .run(["$rootScope", "$location", function ($rootScope, $location) {
     //widget - since $location is shared and is not going to be instantiated
     //by the new injector of this widget, we send the $locationChangeSuccess
-    //ourselves to kickoff ng-rounte and ui-router ($location usually does that
+    //ourselves to kickoff ng-route and ui-router ($location usually does that
     //itself during instantiation)
     $rootScope.$evalAsync(function () {
       var ev = $rootScope.$broadcast('$locationChangeStart', $location.absUrl(), '');
