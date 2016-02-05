@@ -15,5 +15,8 @@
     "test": "#tbd",
     "start": "grunt serve"
   },
-  "private": true
+  "private": false,
+  "publishConfig": {
+    "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
+  }
 }
