@@ -1,10 +1,13 @@
 {
   "name": "angular-widget",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "dependencies": {},
   "devDependencies": {
     "coveralls": "^2.10.0",
     "wix-gruntfile": "~0.1.2"
+  },
+  "publishConfig": {
+    "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "engines": {
     "node": ">=0.8.0"
@@ -15,8 +18,5 @@
     "test": "#tbd",
     "start": "grunt serve"
   },
-  "private": false,
-  "publishConfig": {
-    "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
-  }
+  "private": true
 }
