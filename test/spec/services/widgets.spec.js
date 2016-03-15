@@ -123,10 +123,12 @@ describe('Unit testing widgets service', function () {
       module(function (widgetsProvider) {
         widgetsProvider.addServiceToShare('shahata', {method: 3});
       }, {shahata: {method: spy}});
-      inject(function (widgets, shahata, $rootScope) {
+      inject(function (widgets, shahata, $rootScope, $timeout) {
+        spyOn($rootScope, '$digest');
         shahata.method(1, 2, 3);
+        $timeout.flush();
         expect(spy).toHaveBeenCalledWith(1, 2, 3);
-        expect($rootScope.$$asyncQueue.length).toBe(1);
+        expect($rootScope.$digest).toHaveBeenCalled();
       });
     });
 
@@ -149,9 +151,11 @@ describe('Unit testing widgets service', function () {
       module(function (widgetsProvider) {
         widgetsProvider.addServiceToShare('shahata', ['method']);
       }, {shahata: {method: spy}});
-      inject(function (widgets, shahata, $rootScope) {
+      inject(function (widgets, shahata, $rootScope, $timeout) {
+        spyOn($rootScope, '$digest');
         shahata.method();
-        expect($rootScope.$$asyncQueue.length).toBe(1);
+        $timeout.flush();
+        expect($rootScope.$digest).toHaveBeenCalled();
       });
     });
 

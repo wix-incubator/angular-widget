@@ -1,5 +1,4 @@
 'use strict';
-
 angular.module('angularWidgetInternal')
   .provider('widgets', function () {
     var manifestGenerators = [];
@@ -28,7 +27,7 @@ angular.module('angularWidgetInternal')
         var original = service[method];
         service[method] = function () {
           if (arguments.length >= count && !$rootScope.$$phase) {
-            $rootScope.$evalAsync();
+            $rootScope.$applyAsync();
           }
           return original.apply(service, arguments);
         };

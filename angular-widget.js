@@ -424,7 +424,7 @@ angular.module("angularWidgetInternal").provider("widgets", function() {
             var original = service[method];
             service[method] = function() {
                 if (arguments.length >= count && !$rootScope.$$phase) {
-                    $rootScope.$evalAsync();
+                    $rootScope.$applyAsync();
                 }
                 return original.apply(service, arguments);
             };
