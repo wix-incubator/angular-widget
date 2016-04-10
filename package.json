@@ -7,6 +7,9 @@
     "wix-gruntfile": "~0.1.2",
     "wix-statics-parent": "*"
   },
+  "optionalDependencies": {
+    "wix-statics-parent": "*"
+  },
   "publishConfig": {
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
