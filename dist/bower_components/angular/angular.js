@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.5.4
+ * @license AngularJS v1.5.5
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -57,7 +57,7 @@ function minErr(module, ErrorConstructor) {
       return match;
     });
 
-    message += '\nhttp://errors.angularjs.org/1.5.4/' +
+    message += '\nhttp://errors.angularjs.org/1.5.5/' +
       (module ? module + '/' : '') + code;
 
     for (i = SKIP_INDEXES, paramPrefix = '?'; i < templateArgs.length; i++, paramPrefix = '&') {
@@ -2479,11 +2479,11 @@ function toDebugString(obj) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.5.4',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.5.5',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 5,
-  dot: 4,
-  codeName: 'graduated-sophistry'
+  dot: 5,
+  codeName: 'material-conspiration'
 };
 
 
@@ -7627,6 +7627,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    *      See {@link ng.$compile#-bindtocontroller- `bindToController`}.
    *    - `transclude` – `{boolean=}` – whether {@link $compile#transclusion content transclusion} is enabled.
    *      Disabled by default.
+   *    - `require` - `{Object<string, string>=}` - requires the controllers of other directives and binds them to
+   *      this component's controller. The object keys specify the property names under which the required
+   *      controllers (object values) will be bound. See {@link ng.$compile#-require- `require`}.
    *    - `$...` – additional properties to attach to the directive factory function and the controller
    *      constructor function. (This is used by the component router to annotate)
    *
@@ -9014,13 +9017,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           }
         }
 
-        // Initialize controllers
+        // Initialize bindToController bindings
         for (var name in elementControllers) {
           var controllerDirective = controllerDirectives[name];
           var controller = elementControllers[name];
           var bindings = controllerDirective.$$bindings.bindToController;
 
-          // Initialize bindToController bindings
           if (controller.identifier && bindings) {
             controller.bindingInfo =
               initializeDirectiveBindings(controllerScope, attrs, controller.instance, bindings, controllerDirective);
@@ -9033,14 +9035,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             // If the controller constructor has a return value, overwrite the instance
             // from setupControllers
             controller.instance = controllerResult;
+            $element.data('$' + controllerDirective.name + 'Controller', controllerResult);
             controller.bindingInfo.removeWatches && controller.bindingInfo.removeWatches();
             controller.bindingInfo =
               initializeDirectiveBindings(controllerScope, attrs, controller.instance, bindings, controllerDirective);
           }
-
-          // Store controllers on the $element data
-          // For transclude comment nodes this will be a noop and will be done at transclusion time
-          $element.data('$' + controllerDirective.name + 'Controller', controllerResult);
         }
 
         // Bind the required controllers to the controller, if `require` is an object and `bindToController` is truthy
@@ -9207,7 +9206,14 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           controller = attrs[directive.name];
         }
 
-        elementControllers[directive.name] = $controller(controller, locals, true, directive.controllerAs);
+        var controllerInstance = $controller(controller, locals, true, directive.controllerAs);
+
+        // For directives with element transclusion the element is a comment.
+        // In this case .data will not attach any data.
+        // Instead, we save the controllers for the element in a local hash and attach to .data
+        // later, once we have the actual element.
+        elementControllers[directive.name] = controllerInstance;
+        $element.data('$' + directive.name + 'Controller', controllerInstance.instance);
       }
       return elementControllers;
     }
@@ -10799,7 +10805,7 @@ function $HttpProvider() {
      * That means changes to the properties of `data` are not local to the transform function (since Javascript passes objects by reference).
      * For example, when calling `$http.get(url, $scope.myObject)`, modifications to the object's properties in a transformRequest
      * function will be reflected on the scope and in any templates where the object is data-bound.
-     * To prevent his, transform functions should have no side-effects.
+     * To prevent this, transform functions should have no side-effects.
      * If you need to modify properties, it is recommended to make a copy of the data, or create new object to return.
      * </div>
      *
@@ -11520,13 +11526,17 @@ function $HttpProvider() {
         if (eventHandlers) {
           var applyHandlers = {};
           forEach(eventHandlers, function(eventHandler, key) {
-            applyHandlers[key] = function() {
+            applyHandlers[key] = function(event) {
               if (useApplyAsync) {
-                $rootScope.$applyAsync(eventHandler);
+                $rootScope.$applyAsync(callEventHandler);
               } else if ($rootScope.$$phase) {
-                eventHandler();
+                callEventHandler();
               } else {
-                $rootScope.$apply(eventHandler);
+                $rootScope.$apply(callEventHandler);
+              }
+
+              function callEventHandler() {
+                eventHandler(event);
               }
             };
           });
