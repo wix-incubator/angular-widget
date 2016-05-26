@@ -24,9 +24,14 @@ describe('Unit testing tagAppender service', function () {
       });
     });
 
+    beforeEach(function () {
+      inject(function ($window) {
+        delete $window.lazyLoadingWorking;
+      });
+    });
+
     afterEach(inject(function ($window) {
       $window.requirejs.undef(moduleName);
-      delete $window.lazyLoadingWorking;
     }));
 
     it('should load the javascript files', function (done) {
