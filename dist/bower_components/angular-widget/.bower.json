@@ -1,6 +1,6 @@
 {
   "name": "angular-widget",
-  "version": "0.1.1892",
+  "version": "0.1.1893",
   "main": "angular-widget.js",
   "repository": {
     "type": "git",
@@ -32,11 +32,11 @@
     "requirejs": "~2.1.19"
   },
   "homepage": "https://github.com/shahata/angular-widget",
-  "_release": "0.1.1892",
+  "_release": "0.1.1893",
   "_resolution": {
     "type": "version",
-    "tag": "0.1.1892",
-    "commit": "a93dd1ca15ca0c784d4f42fb3fae910adcfec3e0"
+    "tag": "0.1.1893",
+    "commit": "391500c07c25bdc1ab3e5511e2a4499feecd7683"
   },
   "_source": "https://github.com/shahata/angular-widget.git",
   "_target": "~0.1.30",
