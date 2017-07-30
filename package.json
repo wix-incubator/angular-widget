@@ -19,7 +19,8 @@
     "build": "node_modules/wix-gruntfile/scripts/build.sh",
     "release": "node_modules/wix-gruntfile/scripts/release.sh",
     "test": "#tbd",
-    "start": "grunt serve"
+    "start": "grunt serve",
+    "postinstall": "node_modules/wix-gruntfile/scripts/postinstall.sh"
   },
   "private": true
 }
