@@ -21,5 +21,8 @@
     "test": "#tbd",
     "start": "grunt serve"
   },
-  "private": true
+  "files": [
+    "dist"
+  ],
+  "private": false
 }
