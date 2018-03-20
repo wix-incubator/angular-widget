@@ -1,6 +1,6 @@
 {
   "name": "angular-widget",
-  "version": "1.0.110",
+  "version": "1.0.111",
   "dependencies": {},
   "devDependencies": {
     "coveralls": "^2.10.0",
