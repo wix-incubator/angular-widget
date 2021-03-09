@@ -1,5 +1,5 @@
 {
-  "name": "angular-widget",
+  "name": "@wix/angular-widget",
   "version": "1.0.0",
   "dependencies": {},
   "devDependencies": {
